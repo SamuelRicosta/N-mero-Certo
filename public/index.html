@@ -10,6 +10,9 @@
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
 <meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Número Certo">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -30,6 +33,7 @@
   --toast-bg:#0f172a; --toast-fg:#f8fafc;
   --shadow-sm:0 1px 2px rgba(15,23,42,.06);
   --shadow:0 1px 2px rgba(15,23,42,.04),0 10px 28px -12px rgba(15,23,42,.12);
+  --shadow-lg:0 20px 44px -14px rgba(15,23,42,.3);
   --radius:18px;
   --tone:#64748b;
   color-scheme:light;
@@ -44,6 +48,7 @@
     --toast-bg:#e6edf7; --toast-fg:#0f172a;
     --shadow-sm:0 1px 2px rgba(0,0,0,.3);
     --shadow:0 1px 2px rgba(0,0,0,.25),0 10px 28px -12px rgba(0,0,0,.5);
+    --shadow-lg:0 20px 44px -14px rgba(0,0,0,.7);
     color-scheme:dark;
   }
 }
@@ -56,6 +61,7 @@
   --toast-bg:#e6edf7; --toast-fg:#0f172a;
   --shadow-sm:0 1px 2px rgba(0,0,0,.3);
   --shadow:0 1px 2px rgba(0,0,0,.25),0 10px 28px -12px rgba(0,0,0,.5);
+  --shadow-lg:0 20px 44px -14px rgba(0,0,0,.7);
   color-scheme:dark;
 }
 
@@ -111,19 +117,73 @@ h1,h2,h3{margin:0;letter-spacing:-.02em}
 .icon-btn:hover{color:var(--text);border-color:var(--border-strong)}
 
 /* ================= Campos ================= */
-input[type=text],input[type=password],input[type=search],textarea,.select{
+input[type=text],input[type=password],input[type=search],textarea{
   width:100%;font:inherit;font-size:15px;color:var(--text);background:var(--surface-2);
   border:1px solid var(--border);border-radius:12px;padding:12px 14px;
   transition:border-color .15s,box-shadow .15s,background .15s;
 }
-input:focus,textarea:focus,.select:focus{outline:none;border-color:var(--primary);background:var(--surface);box-shadow:0 0 0 3px color-mix(in srgb,var(--primary) 18%,transparent)}
+input:focus,textarea:focus{outline:none;border-color:var(--primary);background:var(--surface);box-shadow:0 0 0 3px color-mix(in srgb,var(--primary) 18%,transparent)}
 input::placeholder,textarea::placeholder{color:var(--faint)}
-textarea{min-height:100px;resize:vertical;display:block}
-.select{
-  appearance:none;cursor:pointer;padding-right:36px;
-  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
-  background-repeat:no-repeat;background-position:right 12px center;background-size:16px;
+textarea{min-height:100px;resize:none;display:block;overflow:auto}
+/* Campos preenchidos pelo navegador (senha salva) mantêm as cores do sistema */
+input:-webkit-autofill,input:-webkit-autofill:hover{-webkit-text-fill-color:var(--text);caret-color:var(--text);-webkit-box-shadow:0 0 0 1000px var(--surface-2) inset;transition:background-color 9999s 0s}
+input:-webkit-autofill:focus{-webkit-box-shadow:0 0 0 1000px var(--surface) inset,0 0 0 3px color-mix(in srgb,var(--primary) 18%,transparent)}
+/* Busca: remove o "x" nativo (usamos um botão próprio) */
+input[type=search]::-webkit-search-cancel-button,input[type=search]::-webkit-search-decoration{-webkit-appearance:none;appearance:none;display:none}
+.search-box input{padding-right:42px}
+.search-clear{position:absolute;right:6px;top:50%;transform:translateY(-50%);width:32px;height:32px;border:0;border-radius:9px;background:none;color:var(--faint);display:grid;place-items:center;cursor:pointer}
+.search-clear:hover{color:var(--text);background:var(--surface-3)}
+.search-clear svg{width:16px;height:16px}
+
+/* Barras de rolagem no estilo do sistema */
+html{scrollbar-color:var(--border-strong) var(--bg)}
+.contact-list,.dd-menu,textarea{scrollbar-width:thin;scrollbar-color:var(--border-strong) transparent}
+
+/* ================= Menu de seleção (substitui o <select> nativo) ================= */
+.dd{position:relative;min-width:0}
+.dd-btn{width:100%;display:flex;align-items:center;gap:10px;font:inherit;font-size:15px;line-height:1.45;color:var(--text);text-align:left;cursor:pointer;
+  background:var(--surface-2);border:1px solid var(--border);border-radius:12px;padding:12px 12px 12px 14px;transition:border-color .15s,box-shadow .15s,background .15s}
+.dd-btn:hover:not(:disabled){border-color:var(--border-strong)}
+.dd-btn:focus{outline:none}
+.dd-btn:focus-visible,.dd.open .dd-btn{border-color:var(--primary);background:var(--surface);box-shadow:0 0 0 3px color-mix(in srgb,var(--primary) 18%,transparent)}
+.dd-btn:disabled{cursor:default}
+.dd-label{flex:1;min-width:0;display:flex;align-items:center;gap:10px}
+.dd-text{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.dd-placeholder{color:var(--muted)}
+.dd-hint{margin-left:auto;padding-left:6px;font-size:12px;font-weight:600;color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap}
+.dd-chev{color:var(--faint);transition:transform .2s}
+.dd-chev svg{width:16px;height:16px}
+.dd.open .dd-chev{transform:rotate(180deg)}
+.dd-btn:disabled .dd-chev{opacity:.4}
+.dd-menu{position:absolute;left:0;right:0;top:calc(100% + 6px);z-index:30;padding:6px;max-height:min(340px,60vh);overflow:auto;
+  background:var(--surface);border:1px solid var(--border);border-radius:14px;box-shadow:var(--shadow-lg);animation:dd-in .14s ease}
+.dd-menu.up{top:auto;bottom:calc(100% + 6px);animation-name:dd-in-up}
+@keyframes dd-in{from{opacity:0;transform:translateY(-4px)}}
+@keyframes dd-in-up{from{opacity:0;transform:translateY(4px)}}
+.dd-opt{width:100%;display:flex;align-items:center;gap:10px;padding:10px;border:0;border-radius:10px;background:none;font:inherit;font-size:14px;line-height:1.3;color:var(--text);text-align:left;cursor:pointer}
+.dd-opt:focus{outline:none}
+.dd-opt.active{background:var(--surface-3)}
+.dd-opt[aria-selected="true"]{font-weight:700}
+.dd-check{color:var(--primary)}
+.dd-check svg{width:16px;height:16px}
+.dd-opt .dd-hint{margin-left:auto}
+.dd-opt .dd-check{margin-left:4px}
+/* Versão "sem moldura" usada na barra de troca de lista: o menu ocupa a barra inteira */
+.dd-bare{position:static;flex:1}
+.dd-bare .dd-btn,.dd-bare.open .dd-btn,.dd-bare .dd-btn:focus-visible{background:transparent;border-color:transparent;box-shadow:none;font-weight:700;padding:9px 10px 9px 4px}
+.dd-bare .dd-btn:focus-visible{outline:2px solid var(--primary);outline-offset:-2px}
+
+/* ================= Dicas ao passar o mouse (substitui o "title" nativo) ================= */
+@media (hover:hover){
+  [data-tip]{position:relative}
+  [data-tip]:hover::after{
+    content:attr(data-tip);position:absolute;top:calc(100% + 8px);left:50%;transform:translateX(-50%);z-index:40;
+    background:var(--toast-bg);color:var(--toast-fg);font-size:12px;font-weight:500;line-height:1.3;white-space:nowrap;
+    padding:6px 10px;border-radius:8px;box-shadow:0 8px 20px -8px rgba(0,0,0,.4);pointer-events:none;animation:tip-in .15s ease .35s both;
+  }
+  [data-tip-align="end"]:hover::after{left:auto;right:0;transform:none}
 }
+@keyframes tip-in{from{opacity:0}}
 .field{display:block;margin-bottom:14px}
 .field>span{display:block;font-size:13px;font-weight:600;margin-bottom:6px}
 .field em{font-style:normal;font-weight:400;color:var(--muted)}
@@ -156,17 +216,58 @@ textarea{min-height:100px;resize:vertical;display:block}
 .brand-sub{font-size:12px;color:var(--muted)}
 .top-actions{display:flex;gap:8px}
 
-.list-switch{display:flex;align-items:center;gap:10px;background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:4px 4px 4px 14px;box-shadow:var(--shadow-sm);color:var(--muted)}
+.list-switch{position:relative;display:flex;align-items:center;gap:10px;background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:4px 4px 4px 14px;box-shadow:var(--shadow-sm);color:var(--muted);transition:border-color .15s,box-shadow .15s}
+.list-switch:has(.dd.open){border-color:var(--primary);box-shadow:0 0 0 3px color-mix(in srgb,var(--primary) 18%,transparent)}
 .list-switch .label{font-size:12px;font-weight:600;white-space:nowrap}
-.list-switch .select{border:0;background-color:transparent;box-shadow:none;font-weight:700;padding:9px 34px 9px 4px}
 
-.install{display:flex;align-items:center;gap:12px;margin-top:12px;padding:12px;border-radius:16px;
-  background:color-mix(in srgb,var(--primary) 9%,var(--surface));border:1px solid color-mix(in srgb,var(--primary) 30%,var(--border))}
-.install img{border-radius:11px;flex:none}
-.install-text{flex:1;min-width:0;font-size:13px;color:var(--muted);line-height:1.35}
-.install-text b{display:block;color:var(--text);font-size:14px}
-.install .icon-btn{width:32px;height:32px;border:0;background:transparent;box-shadow:none}
-@media (max-width:380px){.install img{display:none}}
+/* Botão "Instalar" fixo no topo */
+.btn-install{height:40px;padding:0 14px;border-radius:12px;font-size:14px;box-shadow:var(--shadow-sm);
+  background:color-mix(in srgb,var(--primary) 12%,var(--surface));border-color:color-mix(in srgb,var(--primary) 38%,transparent);color:color-mix(in srgb,var(--primary) 82%,var(--mix))}
+.btn-install:hover{background:color-mix(in srgb,var(--primary) 20%,var(--surface))}
+.link-btn{display:inline-flex;align-items:center;gap:5px;border:0;background:none;padding:0;font:inherit;font-size:12px;font-weight:600;color:var(--primary);cursor:pointer}
+.link-btn:hover{text-decoration:underline}
+.link-btn svg{width:14px;height:14px}
+
+/* Janela de instalação */
+.install-dlg{width:min(440px,calc(100vw - 24px))}
+.install-dlg .dlg-body{padding:18px 20px 22px}
+.inst-head{display:flex;align-items:center;gap:10px;min-height:40px}
+.inst-head h3{flex:1;font-size:18px;font-weight:700}
+.inst-head .icon-btn{box-shadow:none;border-color:transparent;background:transparent}
+.inst-head .icon-btn:hover{background:var(--surface-2)}
+.inst-lead{color:var(--muted);font-size:14px;margin:6px 0 14px}
+.quick-install{display:grid;gap:12px;padding:14px;margin:8px 0 4px;border-radius:14px;
+  background:color-mix(in srgb,var(--primary) 9%,var(--surface));border:1px solid color-mix(in srgb,var(--primary) 40%,var(--border))}
+.qi-top{display:flex;align-items:center;gap:14px}
+.inst-divider{display:flex;align-items:center;gap:10px;margin:14px 0 10px;font-size:12px;color:var(--muted)}
+.inst-divider::before,.inst-divider::after{content:"";flex:1;height:1px;background:var(--border)}
+.platforms{display:grid;gap:8px}
+.platform{display:flex;align-items:center;gap:14px;width:100%;padding:14px;border:1px solid var(--border);border-radius:14px;background:var(--surface);
+  font:inherit;color:var(--text);text-align:left;cursor:pointer;transition:border-color .15s,background .15s}
+.platform:hover{border-color:var(--border-strong);background:var(--surface-2)}
+.platform.detected{border-color:color-mix(in srgb,var(--primary) 55%,var(--border));background:color-mix(in srgb,var(--primary) 5%,var(--surface))}
+.p-ico{width:44px;height:44px;border-radius:13px;flex:none;display:grid;place-items:center;background:color-mix(in srgb,var(--tone) 13%,var(--surface));color:var(--tone)}
+.p-ico svg{width:22px;height:22px}
+.p-text{flex:1;min-width:0}
+.p-text b{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:15px}
+.p-text small{display:block;color:var(--muted);font-size:13px;margin-top:2px}
+.p-chev{color:var(--faint)}
+.steps{list-style:none;padding:0;margin:16px 0 0;display:grid;gap:14px;counter-reset:passo}
+.steps li{display:flex;gap:12px;align-items:flex-start;font-size:14px;line-height:1.5;counter-increment:passo}
+.steps li::before{content:counter(passo);flex:none;width:26px;height:26px;margin-top:-1px;border-radius:50%;display:grid;place-items:center;font-size:13px;font-weight:700;
+  background:color-mix(in srgb,var(--primary) 14%,var(--surface));color:color-mix(in srgb,var(--primary) 82%,var(--mix))}
+.inst-note{display:flex;gap:10px;margin-top:18px;padding:12px 14px;border-radius:12px;background:var(--surface-2);font-size:13px;color:var(--muted);line-height:1.5}
+.inst-note .ico{color:var(--primary);margin-top:1px}
+.inst-note svg{width:16px;height:16px}
+
+@media (max-width:420px){
+  .top-actions{gap:6px}
+  .brand{gap:10px}
+  .brand-name{font-size:16px}
+  .btn-install{padding:0 11px;gap:6px;font-size:13px}
+  .btn-install svg{width:16px;height:16px}
+}
+@media (max-width:374px){ .brand-name{display:none} }
 
 .tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;background:var(--surface-3);padding:4px;border-radius:14px;margin:14px 0}
 .tabs button{display:flex;align-items:center;justify-content:center;gap:8px;border:0;background:transparent;padding:10px 6px;border-radius:10px;font:inherit;font-size:14px;font-weight:600;color:var(--muted);cursor:pointer;transition:background .15s,color .15s}
@@ -336,7 +437,7 @@ dialog::backdrop{background:rgba(15,23,42,.5);backdrop-filter:blur(3px)}
       <button class="btn btn-primary btn-lg block" type="submit" id="loginBtn">Entrar</button>
     </form>
   </div>
-  <div class="login-foot"><span data-icon="lock"></span>Acesso restrito</div>
+  <div class="login-foot"><span data-icon="lock"></span>Acesso restrito<span class="install-trigger">·</span><button type="button" class="link-btn install-trigger" id="loginInstall"><span data-icon="download"></span>Instalar o aplicativo</button></div>
 </div>
 
 <!-- ================= CARREGANDO / ERRO ================= -->
@@ -354,21 +455,15 @@ dialog::backdrop{background:rgba(15,23,42,.5);backdrop-filter:blur(3px)}
       <div><div class="brand-name">Número Certo</div><div class="brand-sub">Central de ligações</div></div>
     </div>
     <div class="top-actions">
-      <button class="icon-btn" id="themeBtn" title="Alternar tema claro/escuro" aria-label="Alternar tema"></button>
-      <button class="icon-btn" id="logoutBtn" title="Sair" aria-label="Sair"><span data-icon="logout"></span></button>
+      <button class="btn btn-install install-trigger" id="installBtn" data-tip="Instalar como aplicativo" data-tip-align="end"><span data-icon="download"></span><span>Instalar</span></button>
+      <button class="icon-btn" id="themeBtn" data-tip="Tema claro/escuro" data-tip-align="end" aria-label="Alternar tema claro/escuro"></button>
+      <button class="icon-btn" id="logoutBtn" data-tip="Sair" data-tip-align="end" aria-label="Sair"><span data-icon="logout"></span></button>
     </div>
   </header>
 
   <div class="list-switch">
     <span data-icon="layers"></span><span class="label">Lista</span>
-    <select class="select" id="listSelect" aria-label="Lista atual"></select>
-  </div>
-
-  <div class="install hidden" id="installBanner">
-    <img src="/icons/icon-192.png" alt="" width="40" height="40">
-    <div class="install-text"><b>Instalar o app</b>Atalho na tela inicial, sem Play Store.</div>
-    <button class="btn btn-primary btn-sm" id="installBtn"><span data-icon="download"></span>Instalar</button>
-    <button class="icon-btn" id="installClose" title="Agora não" aria-label="Dispensar"><span data-icon="x"></span></button>
+    <div class="dd-bare" id="listDD" data-label="Lista atual"></div>
   </div>
 
   <nav class="tabs" role="tablist">
@@ -405,9 +500,9 @@ dialog::backdrop{background:rgba(15,23,42,.5);backdrop-filter:blur(3px)}
           </div>
         </div>
         <div class="nav">
-          <button class="btn btn-ghost" id="prev" title="Anterior (←)"><span data-icon="chevron-left"></span>Anterior</button>
-          <button class="btn btn-ghost" id="nextPending" title="Ir para o próximo contato sem resultado"><span data-icon="skip"></span>Pendente</button>
-          <button class="btn btn-ghost" id="next" title="Próximo (→)">Próximo<span data-icon="chevron-right"></span></button>
+          <button class="btn btn-ghost" id="prev" data-tip="Atalho: seta ←"><span data-icon="chevron-left"></span>Anterior</button>
+          <button class="btn btn-ghost" id="nextPending" data-tip="Próximo contato sem resultado"><span data-icon="skip"></span>Pendente</button>
+          <button class="btn btn-ghost" id="next" data-tip="Atalho: seta →">Próximo<span data-icon="chevron-right"></span></button>
         </div>
       </div>
 
@@ -435,8 +530,8 @@ dialog::backdrop{background:rgba(15,23,42,.5);backdrop-filter:blur(3px)}
       <div class="card">
         <div class="card-head"><h3>Contatos</h3><span class="hint" id="contactCount"></span></div>
         <div class="filters">
-          <div class="input-icon"><span data-icon="search"></span><input type="search" id="search" placeholder="Buscar nome ou telefone"></div>
-          <select class="select" id="filter" aria-label="Filtrar por status"></select>
+          <div class="input-icon search-box"><span data-icon="search"></span><input type="search" id="search" placeholder="Buscar nome ou telefone" autocomplete="off"><button type="button" class="search-clear hidden" id="searchClear" aria-label="Limpar busca"><span data-icon="x"></span></button></div>
+          <div id="filterDD" data-label="Filtrar por status"></div>
         </div>
         <div class="contact-list" id="contactList"></div>
       </div>
@@ -492,6 +587,17 @@ dialog::backdrop{background:rgba(15,23,42,.5);backdrop-filter:blur(3px)}
     </div>
   </form>
 </dialog>
+<!-- ================= INSTALAR (escolha da plataforma) ================= -->
+<dialog id="installDlg" class="install-dlg" aria-labelledby="instTitle">
+  <div class="dlg-body">
+    <div class="inst-head">
+      <button type="button" class="btn btn-ghost btn-sm hidden" id="instBack"><span data-icon="chevron-left"></span>Voltar</button>
+      <h3 id="instTitle">Instalar o aplicativo</h3>
+      <button type="button" class="icon-btn" id="instClose" aria-label="Fechar"><span data-icon="x"></span></button>
+    </div>
+    <div id="instBody"></div>
+  </div>
+</dialog>
 <div class="toasts" id="toasts" aria-live="polite"></div>
 
 <script>
@@ -509,6 +615,7 @@ const ICONS = {
   copy:'<rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>',
   'chevron-left':'<polyline points="15 18 9 12 15 6"/>',
   'chevron-right':'<polyline points="9 18 15 12 9 6"/>',
+  'chevron-down':'<polyline points="6 9 12 15 18 9"/>',
   skip:'<polygon points="5 4 15 12 5 20 5 4"/><line x1="19" y1="5" x2="19" y2="19"/>',
   chart:'<line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/>',
   list:'<line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/>',
@@ -533,6 +640,9 @@ const ICONS = {
   moon:'<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>',
   wifi:'<line x1="1" y1="1" x2="23" y2="23"/><path d="M16.72 11.06A10.94 10.94 0 0 1 19 12.55"/><path d="M5 12.55a10.94 10.94 0 0 1 5.17-2.39"/><path d="M10.71 5.05A16 16 0 0 1 22.58 9"/><path d="M1.42 9a15.91 15.91 0 0 1 4.7-2.88"/><path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><line x1="12" y1="20" x2="12.01" y2="20"/>',
   x:'<line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>',
+  smartphone:'<rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/>',
+  monitor:'<rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/>',
+  share:'<path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/>',
   inbox:'<polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/>',
 };
 const svg = (name) => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONS[name] || ''}</svg>`;
@@ -601,7 +711,8 @@ function ask({ title, message = '', confirmText = 'Confirmar', cancelText = 'Can
     if (input) { inp.value = input.value || ''; inp.placeholder = input.placeholder || ''; }
     ok.textContent = confirmText;
     ok.className = 'btn ' + (danger ? 'btn-danger' : 'btn-primary');
-    $('dlgCancel').textContent = cancelText;
+    $('dlgCancel').classList.toggle('hidden', cancelText === null);
+    if (cancelText) $('dlgCancel').textContent = cancelText;
     let settled = false;
     const done = (v) => { if (settled) return; settled = true; d.close(); resolve(v); };
     ok.onclick = () => done(input ? inp.value.trim() || null : true);
@@ -611,6 +722,103 @@ function ask({ title, message = '', confirmText = 'Confirmar', cancelText = 'Can
     d.showModal();
     if (input) { inp.focus(); inp.select(); } else ok.focus();
   });
+}
+
+/* ================= Menu de seleção (substitui o <select> nativo) =================
+   items: [{ value, label, hint?, tone? }]  — tone mostra a bolinha de cor do status. */
+let openDD = null;
+function Dropdown(root, { onChange, placeholder = '' } = {}) {
+  root.classList.add('dd');
+  root.innerHTML = `<button type="button" class="dd-btn" aria-haspopup="listbox" aria-expanded="false"><span class="dd-label"></span><span class="ico dd-chev">${svg('chevron-down')}</span></button><div class="dd-menu hidden" role="listbox"></div>`;
+  const btn = root.querySelector('.dd-btn'), menu = root.querySelector('.dd-menu'), label = root.querySelector('.dd-label');
+  if (root.dataset.label) { btn.setAttribute('aria-label', root.dataset.label); menu.setAttribute('aria-label', root.dataset.label); }
+  let items = [], value = null, active = -1;
+  const isOpen = () => !menu.classList.contains('hidden');
+  const parts = (it) => [
+    it.tone ? el('span', { className: 'dot t-' + it.tone }) : null,
+    el('span', { className: 'dd-text', textContent: it.label }),
+    it.hint != null ? el('span', { className: 'dd-hint', textContent: it.hint }) : null,
+  ].filter(Boolean);
+  function paint() {
+    const cur = items.find((i) => i.value === value);
+    label.replaceChildren(...(cur ? parts(cur) : [el('span', { className: 'dd-text dd-placeholder', textContent: placeholder })]));
+    btn.disabled = !items.length;
+  }
+  function setActive(i, scroll = true) {
+    const opts = menu.children;
+    if (!opts.length) return;
+    active = (i + opts.length) % opts.length;
+    [...opts].forEach((o, k) => o.classList.toggle('active', k === active));
+    opts[active].focus({ preventScroll: true });
+    if (scroll) opts[active].scrollIntoView({ block: 'nearest' });
+  }
+  function open() {
+    if (openDD && openDD !== api) openDD.close();
+    menu.replaceChildren(...items.map((it, k) => {
+      const sel = it.value === value;
+      const o = el('button', { type: 'button', className: 'dd-opt', tabIndex: -1, onclick: () => choose(it.value), onmousemove: () => active !== k && setActive(k, false) },
+        ...parts(it), sel ? el('span', { className: 'ico dd-check', innerHTML: svg('check') }) : null);
+      o.setAttribute('role', 'option');
+      o.setAttribute('aria-selected', String(sel));
+      return o;
+    }));
+    menu.classList.remove('hidden', 'up');
+    root.classList.add('open');
+    btn.setAttribute('aria-expanded', 'true');
+    const r = btn.getBoundingClientRect(), below = innerHeight - r.bottom;
+    if (below < Math.min(menu.scrollHeight, 340) + 16 && r.top > below) menu.classList.add('up');
+    setActive(Math.max(0, items.findIndex((i) => i.value === value)));
+    openDD = api;
+  }
+  function close(focusBtn = false) {
+    if (!isOpen()) return;
+    menu.classList.add('hidden');
+    root.classList.remove('open');
+    btn.setAttribute('aria-expanded', 'false');
+    if (openDD === api) openDD = null;
+    if (focusBtn) btn.focus();
+  }
+  function choose(v) {
+    const changed = v !== value;
+    value = v;
+    paint();
+    close(true);
+    if (changed) onChange?.(v);
+  }
+  btn.onclick = () => (isOpen() ? close() : open());
+  btn.onkeydown = (e) => { if (e.key === 'ArrowDown' || e.key === 'ArrowUp') { e.preventDefault(); open(); } };
+  menu.onkeydown = (e) => {
+    const keys = { ArrowDown: () => setActive(active + 1), ArrowUp: () => setActive(active - 1), Home: () => setActive(0), End: () => setActive(items.length - 1), Escape: () => close(true) };
+    if (keys[e.key]) { e.preventDefault(); keys[e.key](); }
+    else if (e.key === 'Tab') close();
+    else if (e.key.length === 1) { // digitar uma letra pula para a opção que começa com ela
+      const k = items.findIndex((it, i) => i > active && norm(it.label).startsWith(norm(e.key)));
+      const k0 = k >= 0 ? k : items.findIndex((it) => norm(it.label).startsWith(norm(e.key)));
+      if (k0 >= 0) setActive(k0);
+    }
+  };
+  const api = {
+    get value() { return value; },
+    setItems(list, v) {
+      items = list;
+      if (v !== undefined) value = v;
+      if (!items.some((i) => i.value === value)) value = items[0]?.value ?? null;
+      close();
+      paint();
+    },
+    close,
+    contains: (node) => root.contains(node),
+  };
+  paint();
+  return api;
+}
+document.addEventListener('pointerdown', (e) => { if (openDD && !openDD.contains(e.target)) openDD.close(); });
+window.addEventListener('resize', () => openDD?.close());
+
+// Caixas de texto crescem conforme o conteúdo (sem a alça de redimensionar do Windows).
+function autoGrow(t, max = 420) {
+  t.style.height = 'auto';
+  t.style.height = Math.min(t.scrollHeight + 2, max) + 'px';
 }
 
 /* ================= Tema ================= */
@@ -830,8 +1038,8 @@ $('nextPending').onclick = () => {
 };
 
 document.addEventListener('keydown', (e) => {
-  if (tab !== 'dial' || !list || $('dlg').open || e.altKey || e.ctrlKey || e.metaKey) return;
-  if (e.target.closest('input, textarea, select')) return;
+  if (tab !== 'dial' || !list || document.querySelector('dialog[open]') || e.altKey || e.ctrlKey || e.metaKey) return;
+  if (e.target.closest('input, textarea, select, .dd')) return;
   if (e.key === 'ArrowLeft') { e.preventDefault(); go(index - 1); }
   if (e.key === 'ArrowRight') { e.preventDefault(); go(index + 1); }
 });
@@ -856,6 +1064,7 @@ $('note').addEventListener('input', () => {
   clearTimeout(noteTimer);
   noteTimer = setTimeout(commitNote, 800);
   renderNoteState();
+  autoGrow($('note'));
 });
 function commitNote() {
   if (!noteTimer) return;
@@ -866,7 +1075,7 @@ function commitNote() {
 $('copyBtn').onclick = async () => {
   const n = phone(current());
   try { await navigator.clipboard.writeText(n); toast('Número copiado: ' + fmtPhone(n)); }
-  catch { prompt('Copie o número:', n); }
+  catch { await ask({ title: 'Copie o número', message: 'Não foi possível copiar automaticamente. Selecione e copie:', input: { value: n }, confirmText: 'Fechar', cancelText: null }); }
 };
 
 /* ================= Renderização ================= */
@@ -882,17 +1091,15 @@ function render() {
   if (tab === 'lists') renderListCards();
 }
 
+const listDD = Dropdown($('listDD'), {
+  placeholder: 'Nenhuma lista criada',
+  onChange: async (id) => { try { await openList(id); } catch (err) { toast(err.message, 'error'); render(); } },
+});
+const filterDD = Dropdown($('filterDD'), { onChange: () => renderContactList() });
+
 function renderHeader() {
-  const sel = $('listSelect');
-  sel.innerHTML = '';
-  if (!lists.length) sel.add(new Option('Nenhuma lista criada', ''));
-  for (const l of lists) { const s = summary(l); sel.add(new Option(`${l.name}  ·  ${s.done}/${s.total}`, l.id)); }
-  sel.value = list ? String(list.id) : '';
-  sel.disabled = !lists.length;
+  listDD.setItems(lists.map((l) => { const s = summary(l); return { value: l.id, label: l.name, hint: `${s.done}/${s.total}` }; }), list ? list.id : null);
 }
-$('listSelect').onchange = async (e) => {
-  try { await openList(Number(e.target.value)); } catch (err) { toast(err.message, 'error'); render(); }
-};
 
 function renderStats() {
   $('statsBlock').classList.toggle('hidden', !list);
@@ -919,7 +1126,7 @@ function renderDial() {
   $('warning').classList.toggle('hidden', [10, 11].includes(n.length));
   $('call').href = 'tel:+55' + n;
   $('whatsapp').href = 'https://wa.me/55' + n;
-  if (document.activeElement !== $('note')) $('note').value = c.note || '';
+  if (document.activeElement !== $('note')) { $('note').value = c.note || ''; autoGrow($('note')); }
 
   const grid = $('statusGrid');
   grid.replaceChildren(...STATUSES.map((s) => el('button',
@@ -945,17 +1152,18 @@ function renderBreakdown() {
 }
 
 function renderContactList() {
-  const f = $('filter');
-  if (!f.options.length) {
-    f.add(new Option('Todos os status', 'Todos'));
-    f.add(new Option('Pendentes', 'Pendente'));
-    STATUSES.forEach((s) => f.add(new Option(s, s)));
-  }
+  const cs = list.contacts, count = (s) => cs.filter((c) => (c.status || 'Pendente') === s).length;
+  filterDD.setItems([
+    { value: 'Todos', label: 'Todos os status', hint: cs.length },
+    { value: 'Pendente', label: 'Pendentes', tone: 'gray', hint: count('Pendente') },
+    ...STATUSES.map((s) => ({ value: s, label: s, tone: TONE[s], hint: count(s) })),
+  ], filterDD.value ?? 'Todos');
+  const filter = filterDD.value;
   const q = norm($('search').value.trim()), qd = q.replace(/\D/g, '');
   const rows = [];
   list.contacts.forEach((c, i) => {
     const s = c.status || 'Pendente';
-    if (f.value !== 'Todos' && f.value !== s) return;
+    if (filter !== 'Todos' && filter !== s) return;
     if (q && !norm(c.name).includes(q) && !(qd && phone(c).includes(qd))) return;
     rows.push(el('button', { className: 'contact-row' + (i === index ? ' current' : ''), onclick: () => go(i) },
       el('span', { className: 'idx', textContent: i + 1 }),
@@ -965,8 +1173,8 @@ function renderContactList() {
   $('contactCount').textContent = `${rows.length} de ${list.contacts.length}`;
   $('contactList').replaceChildren(...(rows.length ? rows : [el('div', { className: 'empty-small', textContent: 'Nenhum contato encontrado.' })]));
 }
-$('filter').onchange = renderContactList;
-$('search').oninput = renderContactList;
+$('search').oninput = () => { $('searchClear').classList.toggle('hidden', !$('search').value); renderContactList(); };
+$('searchClear').onclick = () => { $('search').value = ''; $('searchClear').classList.add('hidden'); renderContactList(); $('search').focus(); };
 
 function renderListCards() {
   const box = $('listCards');
@@ -991,7 +1199,7 @@ function renderListCards() {
           iconEl('phone'), isCurrent ? 'Continuar' : 'Abrir'),
         el('button', { className: 'btn btn-sm btn-ghost', onclick: () => renameList(l) }, iconEl('edit'), 'Renomear'),
         el('span', { className: 'spacer' }),
-        el('button', { className: 'btn btn-sm btn-danger-ghost', title: 'Excluir lista', onclick: () => deleteList(l) }, iconEl('trash'), el('span', { className: 'txt', textContent: 'Excluir' }))));
+        el('button', { className: 'btn btn-sm btn-danger-ghost', ariaLabel: 'Excluir lista', onclick: () => deleteList(l) }, iconEl('trash'), el('span', { className: 'txt', textContent: 'Excluir' }))));
   }));
 }
 
@@ -1008,6 +1216,7 @@ function parseContacts(text) {
 }
 
 $('newContacts').addEventListener('input', () => {
+  autoGrow($('newContacts'), 320);
   const { contacts, bad } = parseContacts($('newContacts').value);
   $('pasteCount').textContent = !contacts.length && !bad.length ? ''
     : `${contacts.length} contato(s) pronto(s)` + (bad.length ? ` · linha(s) com problema: ${bad.slice(0, 5).join(', ')}${bad.length > 5 ? '…' : ''}` : '');
@@ -1028,6 +1237,7 @@ $('createBtn').onclick = async () => {
   try {
     await createList(name, contacts);
     $('newContacts').value = ''; $('newListName').value = ''; $('pasteCount').textContent = '';
+    autoGrow($('newContacts'), 320);
     toast(`Lista "${name}" criada com ${contacts.length} contatos.`);
   } catch (err) { toast(err.message, 'error'); }
   finally { $('createBtn').disabled = false; }
@@ -1124,24 +1334,127 @@ $('backupBtn').onclick = () => {
 };
 
 /* ================= Aplicativo (PWA) ================= */
+// Android/PC: o Chrome/Edge oferece a instalação (beforeinstallprompt).
+// iPhone/iPad: não existe esse evento — mostramos as instruções do "Adicionar à Tela de Início".
+const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+const isStandalone = matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
+const PLATFORM = isIOS ? 'ios' : /android/i.test(navigator.userAgent) ? 'android' : 'desktop';
+const SITE = location.host;
+const PLATFORMS = {
+  android: {
+    label: 'Android', sub: 'Celular ou tablet, pelo Chrome', icon: 'smartphone', tone: 'green', title: 'Instalar no Android',
+    steps: [
+      `Abra **${SITE}** no **Chrome** do celular.`,
+      'Toque no menu **⋮** (três pontinhos, no canto superior direito).',
+      'Toque em **Instalar app** (em alguns aparelhos aparece **Adicionar à tela inicial**).',
+      'Confirme em **Instalar**. O ícone **Número Certo** aparece na tela inicial.',
+    ],
+    note: 'Se no menu aparecer "Abrir app" em vez de "Instalar", ele já está instalado. Não precisa de Play Store e as atualizações chegam sozinhas.',
+  },
+  ios: {
+    label: 'iPhone ou iPad', sub: 'Pelo Safari', icon: 'smartphone', tone: 'blue', title: 'Instalar no iPhone',
+    steps: [
+      `Abra **${SITE}** no **Safari**.`,
+      'Toque em **Compartilhar** (o quadrado com a seta para cima ⬆).',
+      'Role a lista e toque em **Adicionar à Tela de Início**.',
+      'Confira o nome **Número Certo** e toque em **Adicionar**.',
+    ],
+    note: 'Abra pelo ícone e faça login uma vez: no iPhone, o app instalado tem login separado do Safari.',
+  },
+  desktop: {
+    label: 'Computador', sub: 'Windows ou Mac, pelo Chrome ou Edge', icon: 'monitor', tone: 'purple', title: 'Instalar no computador',
+    steps: [
+      `Abra **${SITE}** no **Chrome** ou no **Edge**.`,
+      'Clique no ícone de **instalar** que aparece no fim da barra de endereço.',
+      'Se não aparecer: no menu do navegador, procure **Instalar** (no Edge: **Aplicativos → Instalar este site como um aplicativo**).',
+      'Confirme em **Instalar**. O app abre em janela própria e fica no menu Iniciar.',
+    ],
+    note: 'Dá para fixar o app na barra de tarefas para abrir com um clique.',
+  },
+};
 let installPrompt = null;
-function renderInstall() {
-  $('installBanner').classList.toggle('hidden', !installPrompt || store.get('nc-install-dismissed', false));
+
+// Converte **texto** em negrito, sem usar innerHTML.
+const rich = (s) => s.split('**').map((part, i) => (i % 2 ? el('b', { textContent: part }) : part));
+
+function renderInstallButtons() {
+  document.querySelectorAll('.install-trigger').forEach((b) => b.classList.toggle('hidden', isStandalone));
 }
-window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); installPrompt = e; renderInstall(); });
-window.addEventListener('appinstalled', () => { installPrompt = null; renderInstall(); toast('Aplicativo instalado! Procure o ícone na tela inicial.'); });
-$('installBtn').onclick = async () => {
+
+let instView = 'platforms';
+
+// Instalação direta (Android pelo Chrome, ou Chrome/Edge no computador): um toque.
+async function installNow() {
   if (!installPrompt) return;
-  installPrompt.prompt();
-  await installPrompt.userChoice.catch(() => {});
-  installPrompt = null;
-  renderInstall();
-};
-$('installClose').onclick = () => {
-  store.set('nc-install-dismissed', true);
-  renderInstall();
-  toast('Você pode instalar depois pelo menu ⋮ do Chrome → "Instalar app".');
-};
+  const ev = installPrompt;
+  installPrompt = null; // o Chrome só deixa usar cada convite uma vez
+  $('installDlg').close();
+  ev.prompt();
+  const choice = await ev.userChoice.catch(() => null);
+  if (choice?.outcome === 'dismissed') toast('Instalação cancelada. Toque em Instalar quando quiser tentar de novo.');
+}
+
+function quickInstallCard() {
+  if (!installPrompt) return null;
+  return el('div', { className: 'quick-install' },
+    el('div', { className: 'qi-top' },
+      el('span', { className: 'p-ico t-green', innerHTML: svg('download') }),
+      el('span', { className: 'p-text' },
+        el('b', { textContent: 'Instalar neste aparelho' }),
+        el('small', { textContent: `${PLATFORMS[PLATFORM].label} · um toque, sem passo a passo` }))),
+    el('button', { type: 'button', className: 'btn btn-primary btn-lg block', onclick: installNow }, iconEl('download'), 'Instalar agora'));
+}
+
+function showPlatforms() {
+  instView = 'platforms';
+  $('instBack').classList.add('hidden');
+  $('instTitle').textContent = 'Instalar o aplicativo';
+  $('instBody').replaceChildren(...[
+    quickInstallCard(),
+    installPrompt
+      ? el('div', { className: 'inst-divider', textContent: 'ou veja como instalar em outro aparelho' })
+      : el('p', { className: 'inst-lead', textContent: 'Em qual aparelho você vai usar o Número Certo?' }),
+    el('div', { className: 'platforms' }, ...Object.entries(PLATFORMS).map(([key, p]) =>
+      el('button', { type: 'button', className: 'platform' + (key === PLATFORM ? ' detected' : ''), onclick: () => choosePlatform(key) },
+        el('span', { className: 'p-ico t-' + p.tone, innerHTML: svg(p.icon) }),
+        el('span', { className: 'p-text' },
+          el('b', {}, p.label, key === PLATFORM ? el('span', { className: 'badge t-green', textContent: 'Este aparelho' }) : null),
+          el('small', { textContent: p.sub })),
+        el('span', { className: 'ico p-chev', innerHTML: svg('chevron-right') })))),
+  ].filter(Boolean));
+}
+
+async function choosePlatform(key) {
+  // No próprio aparelho, se o navegador permite, instala direto.
+  if (key === PLATFORM && installPrompt) return installNow();
+  instView = 'steps';
+  const p = PLATFORMS[key];
+  $('instBack').classList.remove('hidden');
+  $('instTitle').textContent = p.title;
+  $('instBody').replaceChildren(
+    el('ol', { className: 'steps' }, ...p.steps.map((s) => el('li', {}, el('span', {}, ...rich(s))))),
+    el('div', { className: 'inst-note' }, iconEl('check-circle'), el('span', { textContent: p.note })),
+    el('div', { className: 'dlg-actions', style: 'padding:18px 0 0' },
+      el('button', { type: 'button', className: 'btn btn-primary', textContent: 'Entendi', onclick: () => $('installDlg').close() })));
+}
+
+function openInstall() {
+  showPlatforms();
+  $('installDlg').showModal();
+  $('installDlg').querySelector('.platform.detected')?.focus();
+}
+document.querySelectorAll('button.install-trigger').forEach((b) => (b.onclick = openInstall));
+$('instBack').onclick = showPlatforms;
+$('instClose').onclick = () => $('installDlg').close();
+$('installDlg').addEventListener('click', (e) => { if (e.target === $('installDlg')) $('installDlg').close(); }); // clique fora fecha
+
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  installPrompt = e;
+  if ($('installDlg').open && instView === 'platforms') showPlatforms(); // janela já aberta: mostra o "Instalar agora"
+});
+window.addEventListener('appinstalled', () => { installPrompt = null; toast('Aplicativo instalado! Procure o ícone Número Certo.'); });
+renderInstallButtons();
 if ('serviceWorker' in navigator) window.addEventListener('load', () => navigator.serviceWorker.register('/sw.js').catch(() => {}));
 
 boot();

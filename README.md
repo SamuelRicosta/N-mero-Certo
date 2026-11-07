@@ -51,6 +51,13 @@ O sistema é um PWA: o Chrome instala como aplicativo, com ícone na tela inicia
    (em alguns aparelhos aparece como "Adicionar à tela inicial").
 3. Pronto: o ícone **Número Certo** fica na tela inicial.
 
+## Instalar no iPhone (tela de início)
+
+1. Abra o site no **Safari** (no iOS 16.4 ou mais novo também funciona pelo Chrome).
+2. Toque em **Compartilhar** (quadrado com seta para cima ⬆).
+3. Role e toque em **Adicionar à Tela de Início** → confira o nome **Número Certo** → **Adicionar**.
+4. Abra pelo ícone e faça login uma vez: no iPhone o app instalado tem login separado do Safari.
+
 Atualizações chegam sozinhas: a cada `git push`, o app abre a versão nova no próximo uso.
 
 **Quer um arquivo .apk?** Com o site já publicado, acesse [pwabuilder.com](https://www.pwabuilder.com),
