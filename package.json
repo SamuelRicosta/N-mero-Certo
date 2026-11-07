@@ -1,0 +1,16 @@
+{
+  "name": "numero-certo",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Discador Número Certo — listas de ligação com login simples e banco Postgres (Neon).",
+  "scripts": {
+    "dev": "vercel dev"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "@neondatabase/serverless": "^1.0.0"
+  }
+}

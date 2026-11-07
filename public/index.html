@@ -1,0 +1,586 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Número Certo — Discador</title>
+<style>
+:root{font-family:system-ui,-apple-system,Segoe UI,sans-serif;color:#17212b;background:#f4f6f8}
+*{box-sizing:border-box}
+body{margin:0;padding:18px 12px}
+.app{max-width:560px;margin:auto;background:white;border:1px solid #e0e5eb;border-radius:20px;padding:20px;box-shadow:0 6px 24px #182a3b12}
+header{display:flex;justify-content:space-between;align-items:center;gap:10px}
+h1{font-size:23px;margin:0}
+.muted{color:#697687;font-size:13px}
+.head-right{display:flex;gap:6px;align-items:center;min-width:0}
+.head-right select{margin:0;padding:8px;font-size:13px;max-width:190px;border-radius:20px;background:#edf4ef;border:0}
+.icon-btn{padding:8px 10px;font-size:12px;background:#f0f2f5}
+.tabs{display:flex;background:#f1f3f5;padding:4px;border-radius:12px;margin:20px 0}
+.tabs button{flex:1}
+.tabs button.active{background:white;box-shadow:0 1px 5px #0001}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.stat{background:#f4f6f8;text-align:center;border-radius:12px;padding:12px 3px}
+.stat b{font-size:24px;display:block}
+.stat small{font-size:11px;color:#697687}
+.bar{height:7px;background:#e9ecef;border-radius:8px;margin:14px 0;overflow:hidden}
+.bar div{height:100%;background:#1a9a5b;width:0;transition:width .3s}
+.sync{font-size:12px;border-radius:10px;padding:8px 11px;margin-bottom:10px;background:#fff6e5;color:#8a5300}
+.sync.error{background:#fdecec;color:#a12626}
+.contact{text-align:center;padding:24px 0 15px}
+.contact h2{font-size:30px;margin:7px 0}
+.phone{font-size:22px;font-weight:600;letter-spacing:.5px}
+button,a.btn{font:inherit;cursor:pointer;border:0;border-radius:11px;padding:13px 10px;background:#f0f2f5;color:#18212b;text-align:center;text-decoration:none;display:inline-block}
+button:disabled{opacity:.35;cursor:default}
+.actions,.status-grid,.nav{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.green{background:#168a4c!important;color:white!important}
+.blue{background:#2563eb!important;color:white!important}
+.danger{color:#b42318!important}
+.outline{border:1px solid #d6dce2;background:white}
+.full{width:100%;margin-top:9px}
+h3{font-size:16px;margin:22px 0 12px}
+.status-grid button{font-size:14px;border:1px solid #d8dee6;background:white}
+.status-grid button:first-child{border-color:#168a4c;color:#168a4c}
+.status-grid button.selected{background:#e2f4e8;border:2px solid #168a4c}
+textarea{width:100%;min-height:70px;border:1px solid #d7dde4;border-radius:10px;padding:11px;font:inherit;margin:14px 0}
+input[type=text],input[type=password]{width:100%;padding:12px;border:1px solid #d8dee5;border-radius:10px;font:inherit;margin:6px 0 12px}
+.nav{margin-top:8px}
+.hidden{display:none!important}
+.row{display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px solid #edf0f2;gap:8px}
+.list{max-height:330px;overflow:auto}
+.list button{display:block;text-align:left;width:100%;margin:5px 0;padding:11px}
+.small{font-size:12px;color:#687383}
+select,input[type=file]{width:100%;padding:11px;border:1px solid #d8dee5;border-radius:10px;margin:10px 0}
+.card{border:1px solid #e3e8ee;border-radius:12px;padding:12px;margin:8px 0}
+.card.current{border-color:#168a4c;background:#f6fbf8}
+.card .title{font-weight:600}
+.card .btns{display:flex;gap:6px;margin-top:10px;flex-wrap:wrap}
+.card .btns button{padding:8px 12px;font-size:13px}
+.empty{text-align:center;padding:30px 10px;color:#697687}
+.login{max-width:380px}
+.login form{margin-top:20px}
+.error{color:#b42318;font-size:13px;min-height:18px}
+footer{font-size:12px;color:#657282;margin-top:18px;line-height:1.5}
+.warning{color:#a04d11;font-size:12px;margin-top:8px}
+@media(max-width:380px){.app{padding:12px}.phone{font-size:19px}.head-right select{max-width:130px}}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<main class="app login hidden" id="loginView">
+  <h1>📞 Número Certo</h1>
+  <div class="muted">Central de ligações</div>
+  <form id="loginForm">
+    <label class="small" for="loginUser">Usuário</label>
+    <input type="text" id="loginUser" autocomplete="username" required>
+    <label class="small" for="loginPass">Senha</label>
+    <input type="password" id="loginPass" autocomplete="current-password" required>
+    <div class="error" id="loginError"></div>
+    <button class="full green" type="submit" id="loginBtn">Entrar</button>
+  </form>
+</main>
+
+<!-- CARREGANDO / ERRO -->
+<main class="app hidden" id="loadingView"><div class="empty" id="loadingText">Carregando…</div></main>
+
+<!-- APLICATIVO -->
+<main class="app hidden" id="appView">
+  <header>
+    <div><h1>📞 Número Certo</h1><div class="muted">Central de ligações</div></div>
+    <div class="head-right">
+      <select id="listSelect" title="Lista atual"></select>
+      <button class="icon-btn" id="logoutBtn" title="Sair">Sair</button>
+    </div>
+  </header>
+
+  <div class="tabs">
+    <button id="tabDial" class="active" data-tab="dial">Discador</button>
+    <button id="tabReport" data-tab="report">Relatórios</button>
+    <button id="tabLists" data-tab="lists">Listas</button>
+  </div>
+
+  <div class="sync hidden" id="sync"></div>
+
+  <div id="statsBlock">
+    <div class="stats">
+      <div class="stat"><b id="done">0</b><small>Realizados</small></div>
+      <div class="stat"><b id="pending">0</b><small>Pendentes</small></div>
+      <div class="stat"><b id="interested">0</b><small>Interessados</small></div>
+    </div>
+    <div class="bar"><div id="progress"></div></div>
+  </div>
+
+  <!-- DISCADOR -->
+  <section id="dial">
+    <div class="contact">
+      <div class="muted" id="position"></div>
+      <h2 id="name"></h2>
+      <div class="phone" id="number"></div>
+      <div class="warning" id="warning"></div>
+      <div class="small" id="currentStatus"></div>
+    </div>
+    <div class="actions">
+      <a class="btn green" id="call">☎ Ligar normal</a>
+      <a class="btn blue" id="whatsapp" target="_blank" rel="noopener">WhatsApp ↗</a>
+    </div>
+    <button class="full outline" id="copyBtn">▢ Copiar número</button>
+    <h3>Resultado da ligação</h3>
+    <div class="status-grid" id="statusGrid"></div>
+    <textarea id="note" placeholder="Observações sobre o cliente (opcional)"></textarea>
+    <div class="nav">
+      <button id="prev">‹ Anterior</button>
+      <button id="next">Próximo ›</button>
+    </div>
+  </section>
+
+  <!-- RELATÓRIOS -->
+  <section id="report" class="hidden">
+    <h3>Relatório de atendimento</h3>
+    <div id="breakdown"></div>
+    <h3>Contatos</h3>
+    <select id="filter"></select>
+    <div class="list" id="contactList"></div>
+    <button class="full green" id="csvBtn">↓ Baixar relatório para Excel (.csv)</button>
+    <button class="full outline" id="backupBtn">↓ Baixar cópia desta lista (.json)</button>
+    <button class="full outline danger" id="resetBtn">Limpar apenas os resultados desta lista</button>
+  </section>
+
+  <!-- LISTAS -->
+  <section id="lists" class="hidden">
+    <h3>Suas listas</h3>
+    <div id="listCards"></div>
+
+    <h3>Nova lista</h3>
+    <label class="small" for="newListName">Nome da lista</label>
+    <input type="text" id="newListName" placeholder="Ex.: Lista 02 — Águas Claras" maxlength="120">
+    <div class="small">Cole um contato por linha: Nome;Telefone</div>
+    <textarea id="newContacts" placeholder="Orlando;61993171605&#10;Maria;61999999999"></textarea>
+    <button class="full green" id="createBtn">Criar lista</button>
+
+    <h3>Importar cópia de segurança</h3>
+    <div class="small">Aceita o .json baixado por este sistema ou pela versão antiga do discador (arquivo único). Cria uma lista nova com os resultados.</div>
+    <input type="file" id="importFile" accept=".json,application/json">
+  </section>
+
+  <footer>Os resultados ficam salvos no servidor e aparecem em qualquer aparelho em que você entrar. Se a internet cair, as marcações ficam guardadas neste aparelho e são enviadas assim que a conexão voltar. A ligação normal abre o discador, se permitido pelo aparelho; o WhatsApp Business depende da configuração de links do Android.</footer>
+</main>
+
+<script>
+const STATUSES = ['Interessado','Não interessado','Interagiu','Atendeu','Não atendeu','Número errado','Não existe','Retornar depois','Visita agendada','Chamar no WhatsApp'];
+const POSITIVE = ['Interessado','Visita agendada'];
+const $ = (id) => document.getElementById(id);
+
+let lists = [];        // resumo de todas as listas
+let list = null;       // lista aberta: { id, name, created_at, contacts: [...] }
+let index = 0;
+let tab = 'dial';
+
+/* ---------- armazenamento local (somente conveniências e fila offline) ---------- */
+const store = {
+  get(k, d) { try { const v = localStorage.getItem(k); return v == null ? d : JSON.parse(v); } catch { return d; } },
+  set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} },
+};
+
+/* ---------- API ---------- */
+class ApiError extends Error { constructor(status, msg) { super(msg); this.status = status; } }
+
+async function api(path, { method = 'GET', body } = {}) {
+  let res;
+  try {
+    res = await fetch('/api/' + path, {
+      method,
+      credentials: 'same-origin',
+      headers: body ? { 'Content-Type': 'application/json' } : {},
+      body: body ? JSON.stringify(body) : undefined,
+    });
+  } catch {
+    throw new ApiError(0, 'Sem conexão com o servidor.');
+  }
+  let data = null;
+  try { data = await res.json(); } catch {}
+  if (res.status === 401 && path !== 'login') { showLogin(); throw new ApiError(401, 'Sessão expirada.'); }
+  if (!res.ok) throw new ApiError(res.status, data?.error || 'Falha na comunicação com o servidor.');
+  return data;
+}
+
+/* ---------- fila de salvamento (resiste a queda de internet) ---------- */
+let queue = store.get('nc-pending', {});   // { contactId: { status?, note? } }
+let flushing = false, flushAgain = false, syncError = false;
+
+function enqueue(contactId, patch) {
+  queue[contactId] = { ...queue[contactId], ...patch };
+  store.set('nc-pending', queue);
+  renderSync();
+  flush();
+}
+
+async function flush() {
+  if (flushing) { flushAgain = true; return; }
+  flushing = true; flushAgain = false;
+  try {
+    for (const id of Object.keys(queue)) {
+      const patch = queue[id];
+      try {
+        await api('contacts/' + id, { method: 'PATCH', body: patch });
+        if (queue[id] === patch) delete queue[id];
+        syncError = false;
+      } catch (e) {
+        if (e.status >= 400 && e.status < 500 && e.status !== 401) { delete queue[id]; continue; } // contato não existe mais
+        syncError = true;
+        break;
+      }
+    }
+  } finally {
+    flushing = false;
+    store.set('nc-pending', queue);
+    renderSync();
+    if (flushAgain && !syncError) flush();
+  }
+}
+
+function renderSync() {
+  const n = Object.keys(queue).length, el = $('sync');
+  el.classList.toggle('hidden', !n);
+  el.classList.toggle('error', syncError);
+  if (n) el.textContent = syncError
+    ? `Sem conexão — ${n} alteração(ões) guardada(s) neste aparelho. Serão enviadas quando a internet voltar.`
+    : `Salvando ${n} alteração(ões)…`;
+}
+
+setInterval(() => { if (Object.keys(queue).length) flush(); }, 15000);
+window.addEventListener('online', flush);
+window.addEventListener('beforeunload', (e) => { commitNote(); if (Object.keys(queue).length) e.preventDefault(); });
+
+/* ---------- telas ---------- */
+function showView(id) {
+  for (const v of ['loginView', 'loadingView', 'appView']) $(v).classList.toggle('hidden', v !== id);
+}
+function showLogin() { showView('loginView'); $('loginPass').value = ''; $('loginUser').focus(); }
+function showMessage(msg) { $('loadingText').textContent = msg; showView('loadingView'); }
+
+$('loginForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  $('loginError').textContent = '';
+  $('loginBtn').disabled = true;
+  try {
+    await api('login', { method: 'POST', body: { user: $('loginUser').value.trim(), password: $('loginPass').value } });
+    await boot();
+  } catch (err) {
+    $('loginError').textContent = err.message;
+  } finally {
+    $('loginBtn').disabled = false;
+  }
+});
+
+$('logoutBtn').onclick = async () => {
+  commitNote();
+  if (Object.keys(queue).length && !confirm('Há alterações ainda não enviadas. Sair mesmo assim? Elas serão enviadas no próximo login neste aparelho.')) return;
+  try { await api('logout', { method: 'POST' }); } catch {}
+  list = null; lists = [];
+  showLogin();
+};
+
+/* ---------- carregamento ---------- */
+async function loadLists() { lists = await api('lists'); }
+
+async function openList(id, { keepTab = false } = {}) {
+  commitNote();
+  const data = await api('lists/' + id);
+  for (const c of data.contacts) {           // aplica alterações ainda não enviadas
+    const p = queue[c.id];
+    if (p) { Object.assign(c, p); if ('status' in p) c.updated_at = p.status ? c.updated_at || new Date().toISOString() : null; }
+  }
+  list = data;
+  index = Math.max(0, Math.min(store.get('nc-index-' + id, 0), list.contacts.length - 1));
+  store.set('nc-last-list', id);
+  if (!keepTab) switchTab('dial');
+  render();
+}
+
+async function boot() {
+  showMessage('Carregando…');
+  try {
+    await api('me');
+    await loadLists();
+    showView('appView');
+    const last = store.get('nc-last-list', null);
+    const target = lists.find((l) => l.id === last) || lists[0];
+    if (target) await openList(target.id);
+    else { list = null; switchTab('lists'); render(); }
+    flush();
+  } catch (err) {
+    if (err.status !== 401) showMessage('Não foi possível carregar: ' + err.message + ' Recarregue a página.');
+  }
+}
+
+// Ao voltar para a aba (ex.: usou em outro aparelho), atualiza os dados se não houver nada pendente.
+document.addEventListener('visibilitychange', async () => {
+  if (document.visibilityState !== 'visible' || !list || noteTimer || Object.keys(queue).length) return;
+  try { await loadLists(); await openList(list.id, { keepTab: true }); } catch {}
+});
+
+/* ---------- utilidades ---------- */
+function phone(c) { const n = String(c.phone).replace(/\D/g, ''); return n.startsWith('61') && n.length >= 10 ? n : '61' + n; }
+function current() { return list?.contacts[index]; }
+function summary(l) {
+  if (list && l.id === list.id) {
+    const cs = list.contacts;
+    return { total: cs.length, done: cs.filter((c) => c.status).length, interested: cs.filter((c) => POSITIVE.includes(c.status)).length };
+  }
+  return l;
+}
+function el(tag, props = {}, ...children) {
+  const node = Object.assign(document.createElement(tag), props);
+  node.append(...children);
+  return node;
+}
+function download(name, content, type) {
+  const url = URL.createObjectURL(new Blob([content], { type }));
+  const a = el('a', { href: url, download: name });
+  document.body.append(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+function slug(s) { return s.normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^\w]+/g, '-').replace(/^-|-$/g, '').toLowerCase() || 'lista'; }
+
+/* ---------- navegação ---------- */
+function switchTab(t) {
+  if (!list && t !== 'lists') t = 'lists';
+  tab = t;
+  for (const s of ['dial', 'report', 'lists']) {
+    $(s).classList.toggle('hidden', s !== t);
+    $('tab' + s[0].toUpperCase() + s.slice(1)).classList.toggle('active', s === t);
+  }
+}
+document.querySelectorAll('.tabs button').forEach((b) => (b.onclick = () => { commitNote(); switchTab(b.dataset.tab); render(); }));
+
+function go(i) {
+  if (!list || i < 0 || i >= list.contacts.length) return;
+  commitNote();
+  index = i;
+  store.set('nc-index-' + list.id, index);
+  switchTab('dial');
+  render();
+}
+$('prev').onclick = () => go(index - 1);
+$('next').onclick = () => go(index + 1);
+
+/* ---------- ações do discador ---------- */
+function mark(s) {
+  commitNote();
+  const c = current();
+  c.status = s;
+  c.updated_at = new Date().toISOString();
+  enqueue(c.id, { status: s });
+  if (index < list.contacts.length - 1) { index++; store.set('nc-index-' + list.id, index); }
+  else switchTab('report');
+  render();
+}
+
+let noteTimer = null, noteContact = null;
+$('note').addEventListener('input', () => {
+  const c = current();
+  c.note = $('note').value;
+  noteContact = c;
+  clearTimeout(noteTimer);
+  noteTimer = setTimeout(commitNote, 800);
+});
+function commitNote() {
+  if (!noteTimer) return;
+  clearTimeout(noteTimer); noteTimer = null;
+  enqueue(noteContact.id, { note: noteContact.note });
+}
+
+$('copyBtn').onclick = async () => {
+  const n = phone(current());
+  try { await navigator.clipboard.writeText(n); alert('Número copiado: ' + n); }
+  catch { prompt('Copie o número:', n); }
+};
+
+/* ---------- renderização ---------- */
+function render() {
+  renderHeader();
+  renderStats();
+  renderSync();
+  $('tabDial').disabled = $('tabReport').disabled = !list;
+  if (list) { renderDial(); renderBreakdown(); renderContactList(); }
+  renderListCards();
+}
+
+function renderHeader() {
+  const sel = $('listSelect');
+  sel.innerHTML = '';
+  if (!lists.length) sel.add(new Option('Nenhuma lista', ''));
+  for (const l of lists) sel.add(new Option(`${l.name} (${summary(l).total})`, l.id));
+  sel.value = list ? String(list.id) : '';
+  sel.disabled = !lists.length;
+}
+$('listSelect').onchange = async (e) => {
+  try { await openList(Number(e.target.value)); } catch (err) { alert(err.message); render(); }
+};
+
+function renderStats() {
+  $('statsBlock').classList.toggle('hidden', !list);
+  if (!list) return;
+  const s = summary(list);
+  $('done').textContent = s.done;
+  $('pending').textContent = s.total - s.done;
+  $('interested').textContent = s.interested;
+  $('progress').style.width = (100 * s.done / s.total || 0) + '%';
+}
+
+function renderDial() {
+  const c = current(), n = phone(c);
+  $('position').textContent = `CONTATO ${index + 1} DE ${list.contacts.length}`;
+  $('name').textContent = c.name;
+  $('number').textContent = n;
+  $('warning').textContent = [10, 11].includes(n.length) ? '' : 'Confira este telefone: formato possivelmente incompleto.';
+  $('currentStatus').textContent = c.status || '';
+  $('call').href = 'tel:+55' + n;
+  $('whatsapp').href = 'https://wa.me/55' + n;
+  if (document.activeElement !== $('note')) $('note').value = c.note || '';
+  const grid = $('statusGrid');
+  grid.innerHTML = '';
+  for (const s of STATUSES) {
+    const b = el('button', { textContent: s, onclick: () => mark(s) });
+    if (c.status === s) b.classList.add('selected');
+    grid.append(b);
+  }
+  $('prev').disabled = index === 0;
+  $('next').disabled = index === list.contacts.length - 1;
+}
+
+function renderBreakdown() {
+  const box = $('breakdown');
+  box.innerHTML = '';
+  for (const s of STATUSES) {
+    box.append(el('div', { className: 'row' },
+      el('span', { textContent: s }),
+      el('b', { textContent: list.contacts.filter((c) => c.status === s).length })));
+  }
+}
+
+function renderContactList() {
+  const f = $('filter');
+  if (!f.options.length) ['Todos', 'Pendente', ...STATUSES].forEach((s) => f.add(new Option(s === 'Pendente' ? 'Pendentes' : s, s)));
+  const box = $('contactList');
+  box.innerHTML = '';
+  list.contacts.forEach((c, i) => {
+    const s = c.status || 'Pendente';
+    if (f.value !== 'Todos' && f.value !== s) return;
+    box.append(el('button', { textContent: `${i + 1}. ${c.name} — ${phone(c)} | ${s}`, onclick: () => go(i) }));
+  });
+}
+$('filter').onchange = renderContactList;
+
+function renderListCards() {
+  const box = $('listCards');
+  box.innerHTML = '';
+  if (!lists.length) { box.append(el('div', { className: 'empty', textContent: 'Nenhuma lista ainda. Crie a primeira abaixo.' })); return; }
+  for (const l of lists) {
+    const s = summary(l);
+    const isCurrent = list && l.id === list.id;
+    box.append(el('div', { className: 'card' + (isCurrent ? ' current' : '') },
+      el('div', { className: 'title', textContent: l.name + (isCurrent ? ' · aberta' : '') }),
+      el('div', { className: 'small', textContent: `${s.done} de ${s.total} realizados · ${s.interested} interessados · criada em ${new Date(l.created_at).toLocaleDateString('pt-BR')}` }),
+      el('div', { className: 'btns' },
+        el('button', { className: 'green', textContent: 'Abrir', onclick: () => openList(l.id).catch((e) => alert(e.message)) }),
+        el('button', { className: 'outline', textContent: 'Renomear', onclick: () => renameList(l) }),
+        el('button', { className: 'outline danger', textContent: 'Excluir', onclick: () => deleteList(l) }))));
+  }
+}
+
+/* ---------- gestão de listas ---------- */
+async function createList(name, contacts) {
+  const { id } = await api('lists', { method: 'POST', body: { name, contacts } });
+  await loadLists();
+  await openList(id);
+}
+
+$('createBtn').onclick = async () => {
+  const lines = $('newContacts').value.split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
+  const contacts = lines.map((l) => { const p = l.split(/[;\t,]/); return { name: (p[0] || '').trim(), phone: (p[1] || '').replace(/\D/g, '') }; });
+  const bad = contacts.findIndex((c) => !c.name || !c.phone);
+  if (!contacts.length || bad >= 0) { alert(contacts.length ? `Linha ${bad + 1} inválida. Use Nome;Telefone, um por linha.` : 'Cole ao menos um contato.'); return; }
+  const name = $('newListName').value.trim() || 'Lista ' + new Date().toLocaleDateString('pt-BR');
+  $('createBtn').disabled = true;
+  try {
+    await createList(name, contacts);
+    $('newContacts').value = ''; $('newListName').value = '';
+  } catch (err) { alert(err.message); }
+  finally { $('createBtn').disabled = false; }
+};
+
+$('importFile').onchange = async (e) => {
+  const file = e.target.files[0];
+  e.target.value = '';
+  if (!file) return;
+  let x;
+  try { x = JSON.parse(await file.text()); } catch { alert('Arquivo .json inválido.'); return; }
+  if (!Array.isArray(x?.contacts) || !x.contacts.length || !x.contacts.every((c) => c?.name && c?.phone)) { alert('Arquivo de cópia de segurança inválido.'); return; }
+  const old = x.records && typeof x.records === 'object' ? x.records : {}; // formato da versão antiga
+  const contacts = x.contacts.map((c, i) => ({
+    name: String(c.name), phone: String(c.phone),
+    status: c.status ?? old[i]?.status ?? null,
+    note: c.note ?? old[i]?.note ?? '',
+    updatedAt: c.updatedAt ?? old[i]?.updatedAt ?? null,
+  }));
+  const name = prompt('Nome da lista importada:', x.name || file.name.replace(/\.json$/i, ''));
+  if (!name) return;
+  try { await createList(name.trim(), contacts); alert(`Lista "${name}" importada com ${contacts.length} contatos.`); }
+  catch (err) { alert(err.message); }
+};
+
+async function renameList(l) {
+  const name = prompt('Novo nome da lista:', l.name);
+  if (!name || name.trim() === l.name) return;
+  try {
+    await api('lists/' + l.id, { method: 'PATCH', body: { name: name.trim() } });
+    l.name = name.trim();
+    if (list?.id === l.id) list.name = l.name;
+    render();
+  } catch (err) { alert(err.message); }
+}
+
+async function deleteList(l) {
+  if (!confirm(`Excluir a lista "${l.name}" e todos os seus resultados? Isso não pode ser desfeito. Baixe o relatório antes, se precisar.`)) return;
+  try {
+    await api('lists/' + l.id, { method: 'DELETE' });
+    if (list?.id === l.id) { for (const c of list.contacts) delete queue[c.id]; store.set('nc-pending', queue); list = null; }
+    await loadLists();
+    if (!list && lists[0]) await openList(lists[0].id, { keepTab: true });
+    switchTab('lists');
+    render();
+  } catch (err) { alert(err.message); }
+}
+
+$('resetBtn').onclick = async () => {
+  if (!confirm(`Apagar todos os resultados e observações da lista "${list.name}"? Baixe o relatório antes para não perder.`)) return;
+  try {
+    commitNote();
+    for (const c of list.contacts) delete queue[c.id];
+    store.set('nc-pending', queue);
+    await api('lists/' + list.id, { method: 'PATCH', body: { resetResults: true } });
+    store.set('nc-index-' + list.id, 0);
+    await openList(list.id);
+  } catch (err) { alert(err.message); }
+};
+
+/* ---------- exportação ---------- */
+$('csvBtn').onclick = () => {
+  const rows = [['Nome', 'Telefone', 'Status', 'Observação', 'Data do registro'],
+    ...list.contacts.map((c) => [c.name, phone(c), c.status || 'Pendente', c.note || '', c.updated_at ? new Date(c.updated_at).toLocaleString('pt-BR') : ''])];
+  const csv = '﻿' + rows.map((r) => r.map((v) => '"' + String(v).replace(/"/g, '""') + '"').join(';')).join('\r\n');
+  download(`numero-certo-${slug(list.name)}.csv`, csv, 'text/csv;charset=utf-8');
+};
+
+$('backupBtn').onclick = () => {
+  const data = { name: list.name, exportedAt: new Date().toISOString(),
+    contacts: list.contacts.map((c) => ({ name: c.name, phone: c.phone, status: c.status, note: c.note, updatedAt: c.updated_at })) };
+  download(`numero-certo-${slug(list.name)}.json`, JSON.stringify(data, null, 2), 'application/json');
+};
+
+boot();
+</script>
+</body>
+</html>
