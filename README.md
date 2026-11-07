@@ -42,6 +42,22 @@ exemplos/lista-01.json → a lista original de 62 contatos, pronta para importar
 
 Cada `git push` na branch `main` publica a nova versão automaticamente.
 
+## Instalar como aplicativo no Android (sem Play Store)
+
+O sistema é um PWA: o Chrome instala como aplicativo, com ícone na tela inicial e tela cheia.
+
+1. No celular, abra o site no **Chrome** e faça login.
+2. Toque em **Instalar** no aviso verde do topo, ou no menu **⋮ → Instalar app**
+   (em alguns aparelhos aparece como "Adicionar à tela inicial").
+3. Pronto: o ícone **Número Certo** fica na tela inicial.
+
+Atualizações chegam sozinhas: a cada `git push`, o app abre a versão nova no próximo uso.
+
+**Quer um arquivo .apk?** Com o site já publicado, acesse [pwabuilder.com](https://www.pwabuilder.com),
+informe o endereço do site → **Package for stores → Android → Generate**. O .zip baixado traz um `.apk`
+que pode ser enviado e instalado direto (o Android pede para permitir "instalar apps desconhecidos").
+Guarde o arquivo `signing.keystore` e a senha que vêm no .zip: são necessários para gerar versões futuras.
+
 ## Rodar no computador (opcional)
 
 ```bash
