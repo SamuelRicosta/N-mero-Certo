@@ -2,173 +2,524 @@
 <html lang="pt-BR">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="robots" content="noindex">
-<title>Número Certo — Discador</title>
+<meta name="theme-color" content="#f2f5f9" id="themeColor">
+<title>Número Certo</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%2316a34a'/%3E%3Cpath transform='translate(4 4)' fill='none' stroke='white' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round' d='M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script>
+  // Aplica o tema salvo antes de desenhar a página (evita "piscar").
+  try { const t = JSON.parse(localStorage.getItem('nc-theme')); if (t) document.documentElement.dataset.theme = t; } catch {}
+</script>
 <style>
-:root{font-family:system-ui,-apple-system,Segoe UI,sans-serif;color:#17212b;background:#f4f6f8}
+/* ================= Tokens ================= */
+:root{
+  --bg:#f2f5f9; --bg-glow:#dcf3e4;
+  --surface:#ffffff; --surface-2:#f6f8fb; --surface-3:#edf1f6;
+  --border:#e3e8ef; --border-strong:#cbd5e1;
+  --text:#0f172a; --muted:#64748b; --faint:#94a3b8;
+  --primary:#16a34a; --primary-hover:#15803d;
+  --danger:#dc2626; --wa:#1fa855;
+  --mix:#000; /* usado para escurecer (claro) ou clarear (escuro) as cores de status */
+  --toast-bg:#0f172a; --toast-fg:#f8fafc;
+  --shadow-sm:0 1px 2px rgba(15,23,42,.06);
+  --shadow:0 1px 2px rgba(15,23,42,.04),0 10px 28px -12px rgba(15,23,42,.12);
+  --radius:18px;
+  --tone:#64748b;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0a0f1a; --bg-glow:#0f2a1b;
+    --surface:#111827; --surface-2:#161f31; --surface-3:#1e293b;
+    --border:#232f45; --border-strong:#334155;
+    --text:#e6edf7; --muted:#94a3b8; --faint:#64748b;
+    --danger:#f87171; --wa:#25d366; --mix:#fff;
+    --toast-bg:#e6edf7; --toast-fg:#0f172a;
+    --shadow-sm:0 1px 2px rgba(0,0,0,.3);
+    --shadow:0 1px 2px rgba(0,0,0,.25),0 10px 28px -12px rgba(0,0,0,.5);
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0a0f1a; --bg-glow:#0f2a1b;
+  --surface:#111827; --surface-2:#161f31; --surface-3:#1e293b;
+  --border:#232f45; --border-strong:#334155;
+  --text:#e6edf7; --muted:#94a3b8; --faint:#64748b;
+  --danger:#f87171; --wa:#25d366; --mix:#fff;
+  --toast-bg:#e6edf7; --toast-fg:#0f172a;
+  --shadow-sm:0 1px 2px rgba(0,0,0,.3);
+  --shadow:0 1px 2px rgba(0,0,0,.25),0 10px 28px -12px rgba(0,0,0,.5);
+  color-scheme:dark;
+}
+
+/* Cores dos status */
+.t-green{--tone:#16a34a}.t-red{--tone:#dc2626}.t-blue{--tone:#2563eb}.t-teal{--tone:#0d9488}
+.t-amber{--tone:#d97706}.t-orange{--tone:#ea580c}.t-gray{--tone:#64748b}.t-purple{--tone:#7c3aed}.t-wa{--tone:#1fa855}
+
+/* ================= Base ================= */
 *{box-sizing:border-box}
-body{margin:0;padding:18px 12px}
-.app{max-width:560px;margin:auto;background:white;border:1px solid #e0e5eb;border-radius:20px;padding:20px;box-shadow:0 6px 24px #182a3b12}
-header{display:flex;justify-content:space-between;align-items:center;gap:10px}
-h1{font-size:23px;margin:0}
-.muted{color:#697687;font-size:13px}
-.head-right{display:flex;gap:6px;align-items:center;min-width:0}
-.head-right select{margin:0;padding:8px;font-size:13px;max-width:190px;border-radius:20px;background:#edf4ef;border:0}
-.icon-btn{padding:8px 10px;font-size:12px;background:#f0f2f5}
-.tabs{display:flex;background:#f1f3f5;padding:4px;border-radius:12px;margin:20px 0}
-.tabs button{flex:1}
-.tabs button.active{background:white;box-shadow:0 1px 5px #0001}
-.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
-.stat{background:#f4f6f8;text-align:center;border-radius:12px;padding:12px 3px}
-.stat b{font-size:24px;display:block}
-.stat small{font-size:11px;color:#697687}
-.bar{height:7px;background:#e9ecef;border-radius:8px;margin:14px 0;overflow:hidden}
-.bar div{height:100%;background:#1a9a5b;width:0;transition:width .3s}
-.sync{font-size:12px;border-radius:10px;padding:8px 11px;margin-bottom:10px;background:#fff6e5;color:#8a5300}
-.sync.error{background:#fdecec;color:#a12626}
-.contact{text-align:center;padding:24px 0 15px}
-.contact h2{font-size:30px;margin:7px 0}
-.phone{font-size:22px;font-weight:600;letter-spacing:.5px}
-button,a.btn{font:inherit;cursor:pointer;border:0;border-radius:11px;padding:13px 10px;background:#f0f2f5;color:#18212b;text-align:center;text-decoration:none;display:inline-block}
-button:disabled{opacity:.35;cursor:default}
-.actions,.status-grid,.nav{display:grid;grid-template-columns:1fr 1fr;gap:9px}
-.green{background:#168a4c!important;color:white!important}
-.blue{background:#2563eb!important;color:white!important}
-.danger{color:#b42318!important}
-.outline{border:1px solid #d6dce2;background:white}
-.full{width:100%;margin-top:9px}
-h3{font-size:16px;margin:22px 0 12px}
-.status-grid button{font-size:14px;border:1px solid #d8dee6;background:white}
-.status-grid button:first-child{border-color:#168a4c;color:#168a4c}
-.status-grid button.selected{background:#e2f4e8;border:2px solid #168a4c}
-textarea{width:100%;min-height:70px;border:1px solid #d7dde4;border-radius:10px;padding:11px;font:inherit;margin:14px 0}
-input[type=text],input[type=password]{width:100%;padding:12px;border:1px solid #d8dee5;border-radius:10px;font:inherit;margin:6px 0 12px}
-.nav{margin-top:8px}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0;min-height:100vh;color:var(--text);background:var(--bg);
+  background-image:radial-gradient(900px 420px at 50% -180px,var(--bg-glow),transparent 70%);
+  background-repeat:no-repeat;
+  font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;font-size:15px;line-height:1.45;
+  -webkit-font-smoothing:antialiased;
+}
+h1,h2,h3{margin:0;letter-spacing:-.02em}
 .hidden{display:none!important}
-.row{display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px solid #edf0f2;gap:8px}
-.list{max-height:330px;overflow:auto}
-.list button{display:block;text-align:left;width:100%;margin:5px 0;padding:11px}
-.small{font-size:12px;color:#687383}
-select,input[type=file]{width:100%;padding:11px;border:1px solid #d8dee5;border-radius:10px;margin:10px 0}
-.card{border:1px solid #e3e8ee;border-radius:12px;padding:12px;margin:8px 0}
-.card.current{border-color:#168a4c;background:#f6fbf8}
-.card .title{font-weight:600}
-.card .btns{display:flex;gap:6px;margin-top:10px;flex-wrap:wrap}
-.card .btns button{padding:8px 12px;font-size:13px}
-.empty{text-align:center;padding:30px 10px;color:#697687}
-.login{max-width:380px}
-.login form{margin-top:20px}
-.error{color:#b42318;font-size:13px;min-height:18px}
-footer{font-size:12px;color:#657282;margin-top:18px;line-height:1.5}
-.warning{color:#a04d11;font-size:12px;margin-top:8px}
-@media(max-width:380px){.app{padding:12px}.phone{font-size:19px}.head-right select{max-width:130px}}
+.ico{display:inline-flex;flex:none}
+.ico svg{width:18px;height:18px}
+:focus-visible{outline:2px solid var(--primary);outline-offset:2px}
+::selection{background:color-mix(in srgb,var(--primary) 25%,transparent)}
+
+/* ================= Botões ================= */
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:8px;
+  font:inherit;font-weight:600;font-size:14px;line-height:1.2;padding:11px 14px;border-radius:12px;
+  border:1px solid transparent;cursor:pointer;text-decoration:none;color:var(--text);background:none;
+  transition:background .15s,border-color .15s,box-shadow .15s,transform .06s;
+  -webkit-tap-highlight-color:transparent;user-select:none;
+}
+.btn:active:not(:disabled){transform:translateY(1px)}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.btn svg{width:18px;height:18px;flex:none}
+.btn-lg{padding:15px 18px;font-size:16px;border-radius:14px}
+.btn-sm{padding:8px 12px;font-size:13px;border-radius:10px}
+.btn-sm svg{width:16px;height:16px}
+.block{width:100%}
+.btn-primary{background:var(--primary);color:#fff;box-shadow:0 8px 18px -8px rgba(22,163,74,.7)}
+.btn-primary:hover:not(:disabled){background:var(--primary-hover)}
+.btn-ghost{background:var(--surface);border-color:var(--border)}
+.btn-ghost:hover:not(:disabled){background:var(--surface-2);border-color:var(--border-strong)}
+.btn-wa{background:color-mix(in srgb,var(--wa) 13%,var(--surface));border-color:color-mix(in srgb,var(--wa) 35%,transparent);color:color-mix(in srgb,var(--wa) 72%,var(--mix))}
+.btn-wa:hover{background:color-mix(in srgb,var(--wa) 20%,var(--surface))}
+.btn-danger{background:var(--danger);color:#fff}
+.btn-danger-ghost{background:var(--surface);border-color:color-mix(in srgb,var(--danger) 35%,var(--border));color:var(--danger)}
+.btn-danger-ghost:hover{background:color-mix(in srgb,var(--danger) 8%,var(--surface))}
+.icon-btn{
+  width:40px;height:40px;border-radius:12px;border:1px solid var(--border);background:var(--surface);color:var(--muted);
+  display:grid;place-items:center;cursor:pointer;box-shadow:var(--shadow-sm);transition:color .15s,border-color .15s;
+}
+.icon-btn:hover{color:var(--text);border-color:var(--border-strong)}
+
+/* ================= Campos ================= */
+input[type=text],input[type=password],input[type=search],textarea,.select{
+  width:100%;font:inherit;font-size:15px;color:var(--text);background:var(--surface-2);
+  border:1px solid var(--border);border-radius:12px;padding:12px 14px;
+  transition:border-color .15s,box-shadow .15s,background .15s;
+}
+input:focus,textarea:focus,.select:focus{outline:none;border-color:var(--primary);background:var(--surface);box-shadow:0 0 0 3px color-mix(in srgb,var(--primary) 18%,transparent)}
+input::placeholder,textarea::placeholder{color:var(--faint)}
+textarea{min-height:100px;resize:vertical;display:block}
+.select{
+  appearance:none;cursor:pointer;padding-right:36px;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 12px center;background-size:16px;
+}
+.field{display:block;margin-bottom:14px}
+.field>span{display:block;font-size:13px;font-weight:600;margin-bottom:6px}
+.field em{font-style:normal;font-weight:400;color:var(--muted)}
+.input-icon{position:relative}
+.input-icon>.ico{position:absolute;left:13px;top:50%;transform:translateY(-50%);color:var(--faint);pointer-events:none}
+.input-icon>input{padding-left:42px}
+
+/* ================= Login / carregando ================= */
+.login-wrap,.center-view{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px 16px}
+.login-card{width:100%;max-width:400px;background:var(--surface);border:1px solid var(--border);border-radius:24px;padding:34px 28px 28px;box-shadow:0 24px 60px -24px rgba(15,23,42,.3);text-align:center}
+.login-card h1{font-size:25px;font-weight:800}
+.login-card .sub{color:var(--muted);font-size:14px;margin-top:4px}
+.login-card form{text-align:left;margin-top:26px}
+.login-foot{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--faint);margin-top:18px}
+.login-foot svg{width:14px;height:14px}
+.error{color:var(--danger);font-size:13px;font-weight:500;min-height:20px;margin:-2px 0 10px}
+.center-view{gap:16px;color:var(--muted);text-align:center}
+.spinner{width:38px;height:38px;border-radius:50%;border:3px solid var(--surface-3);border-top-color:var(--primary);animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ================= Estrutura ================= */
+.shell{max-width:1040px;margin:0 auto;padding:16px 16px 36px}
+.topbar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:16px}
+.brand{display:flex;align-items:center;gap:12px;min-width:0}
+.brand-logo{width:42px;height:42px;border-radius:13px;flex:none;display:grid;place-items:center;color:#fff;background:linear-gradient(135deg,#22c55e,#15803d);box-shadow:0 8px 18px -6px rgba(22,163,74,.55)}
+.brand-logo svg{width:21px;height:21px}
+.brand-logo.lg{width:62px;height:62px;border-radius:19px;margin:0 auto 16px}
+.brand-logo.lg svg{width:30px;height:30px}
+.brand-name{font-weight:800;font-size:18px;letter-spacing:-.02em;line-height:1.2}
+.brand-sub{font-size:12px;color:var(--muted)}
+.top-actions{display:flex;gap:8px}
+
+.list-switch{display:flex;align-items:center;gap:10px;background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:4px 4px 4px 14px;box-shadow:var(--shadow-sm);color:var(--muted)}
+.list-switch .label{font-size:12px;font-weight:600;white-space:nowrap}
+.list-switch .select{border:0;background-color:transparent;box-shadow:none;font-weight:700;padding:9px 34px 9px 4px}
+
+.tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;background:var(--surface-3);padding:4px;border-radius:14px;margin:14px 0}
+.tabs button{display:flex;align-items:center;justify-content:center;gap:8px;border:0;background:transparent;padding:10px 6px;border-radius:10px;font:inherit;font-size:14px;font-weight:600;color:var(--muted);cursor:pointer;transition:background .15s,color .15s}
+.tabs button:hover:not(:disabled){color:var(--text)}
+.tabs button.active{background:var(--surface);color:var(--text);box-shadow:var(--shadow-sm)}
+.tabs button:disabled{opacity:.4;cursor:not-allowed}
+
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:18px;box-shadow:var(--shadow)}
+.card-head{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:2px 10px;margin-bottom:12px}
+.card h3{font-size:15px;font-weight:700;display:flex;align-items:center;gap:8px}
+.hint{font-size:12px;color:var(--muted)}
+.mt{margin-top:22px}
+.split{display:grid;gap:14px}
+.split>*{min-width:0}
+.stack{display:grid;gap:10px}
+@media (min-width:900px){
+  .shell{padding:28px 24px 44px}
+  .split{grid-template-columns:1fr 1fr;align-items:start}
+  .split.wide-left{grid-template-columns:1.25fr 1fr}
+}
+
+/* ================= Sincronização ================= */
+.sync{display:flex;align-items:center;gap:10px;font-size:13px;font-weight:500;border-radius:12px;padding:10px 14px;margin-bottom:14px;
+  background:color-mix(in srgb,var(--tone) 12%,var(--surface));color:color-mix(in srgb,var(--tone) 80%,var(--mix));border:1px solid color-mix(in srgb,var(--tone) 30%,transparent)}
+
+/* ================= Indicadores ================= */
+.stats-card{margin-bottom:14px;padding:14px 16px}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.stat{display:flex;align-items:center;gap:12px;min-width:0}
+.stat-ico{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;flex:none;background:color-mix(in srgb,var(--tone) 13%,var(--surface));color:var(--tone)}
+.stat b{display:block;font-size:22px;font-weight:800;line-height:1.1;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.stat small{font-size:12px;color:var(--muted)}
+.progress{display:flex;align-items:center;gap:12px;margin-top:14px}
+.track{flex:1;height:8px;background:var(--surface-3);border-radius:99px;overflow:hidden}
+.track>div{height:100%;width:0;border-radius:99px;background:linear-gradient(90deg,#22c55e,#16a34a);transition:width .45s ease}
+.pct{font-size:12px;font-weight:700;color:var(--muted);font-variant-numeric:tabular-nums;min-width:38px;text-align:right}
+
+/* ================= Discador ================= */
+.contact-card{text-align:center}
+.contact-top{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.eyebrow{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.avatar{width:80px;height:80px;border-radius:50%;margin:20px auto 14px;display:grid;place-items:center;font-size:28px;font-weight:800;letter-spacing:-.02em;
+  background:color-mix(in srgb,var(--tone) 15%,var(--surface));color:color-mix(in srgb,var(--tone) 80%,var(--mix));
+  box-shadow:0 0 0 4px var(--surface),0 0 0 6px color-mix(in srgb,var(--tone) 30%,transparent);transition:background .2s}
+#name{font-size:28px;font-weight:800;line-height:1.15;word-break:break-word}
+.phone{font-size:20px;font-weight:600;color:var(--muted);margin-top:6px;letter-spacing:.01em}
+.warn{display:inline-flex;align-items:center;gap:6px;margin-top:12px;font-size:12px;font-weight:600;padding:6px 11px;border-radius:99px;
+  background:color-mix(in srgb,var(--tone) 13%,var(--surface));color:color-mix(in srgb,var(--tone) 80%,var(--mix))}
+.warn svg{width:14px;height:14px}
+.contact-actions{display:grid;gap:10px;margin-top:22px}
+.row-2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.nav{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:16px;padding-top:16px;border-top:1px solid var(--border)}
+.nav>.btn,.row-2>.btn{min-width:0;white-space:nowrap}
+
+.status-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.status-btn{display:flex;align-items:center;gap:10px;text-align:left;min-height:50px;padding:11px 12px;border-radius:12px;border:1px solid var(--border);background:var(--surface);color:var(--text);font:inherit;font-size:14px;font-weight:500;line-height:1.2;cursor:pointer;transition:background .15s,border-color .15s;-webkit-tap-highlight-color:transparent}
+.status-btn:hover{border-color:color-mix(in srgb,var(--tone) 55%,var(--border));background:color-mix(in srgb,var(--tone) 6%,var(--surface))}
+.status-btn.selected{border-color:var(--tone);background:color-mix(in srgb,var(--tone) 14%,var(--surface));color:color-mix(in srgb,var(--tone) 80%,var(--mix));font-weight:700}
+.status-btn .check{margin-left:auto}
+.status-btn .check svg{width:16px;height:16px}
+.dot{width:10px;height:10px;border-radius:50%;flex:none;background:var(--tone);box-shadow:0 0 0 3px color-mix(in srgb,var(--tone) 20%,transparent)}
+
+.badge{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;padding:4px 10px;border-radius:99px;white-space:nowrap;
+  background:color-mix(in srgb,var(--tone) 13%,var(--surface));color:color-mix(in srgb,var(--tone) 80%,var(--mix))}
+.badge::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--tone)}
+
+/* ================= Relatórios ================= */
+.bk-row{padding:9px 0}
+.bk-row.zero{opacity:.45}
+.bk-top{display:flex;align-items:center;gap:10px;font-size:14px}
+.bk-label{flex:1}
+.bk-count{font-weight:700;font-variant-numeric:tabular-nums}
+.bk-pct{width:46px;text-align:right;font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
+.bk-bar{height:6px;margin-top:7px;border-radius:99px;background:var(--surface-3);overflow:hidden}
+.bk-bar>div{height:100%;border-radius:99px;background:var(--tone);transition:width .45s ease}
+.filters{display:grid;grid-template-columns:1fr 190px;gap:8px;margin-bottom:8px}
+.contact-list{max-height:560px;overflow:auto;margin:0 -8px;padding:0 8px}
+.contact-row{display:flex;align-items:center;gap:12px;width:100%;text-align:left;background:none;border:0;border-radius:12px;padding:10px 8px;font:inherit;color:var(--text);cursor:pointer}
+.contact-row:hover{background:var(--surface-2)}
+.contact-row.current{background:color-mix(in srgb,var(--primary) 9%,var(--surface))}
+.contact-row .idx{width:30px;height:30px;border-radius:9px;background:var(--surface-3);display:grid;place-items:center;font-size:12px;font-weight:700;color:var(--muted);flex:none;font-variant-numeric:tabular-nums}
+.cr-main{flex:1;min-width:0}
+.cr-main b{display:block;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cr-main small{display:block;font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.contact-row .badge{display:block;flex:0 1 auto;min-width:0;max-width:45%;overflow:hidden;text-overflow:ellipsis}
+.contact-row .badge::before{display:inline-block;vertical-align:middle;margin:-2px 6px 0 0}
+.empty-small{text-align:center;color:var(--muted);padding:28px 10px;font-size:14px}
+
+/* ================= Listas ================= */
+.section-title{display:flex;align-items:center;justify-content:space-between;margin:2px 2px 12px}
+.section-title h3{font-size:15px;font-weight:700}
+.cards{display:grid;gap:10px}
+.list-card{padding:16px}
+.list-card.current{border-color:color-mix(in srgb,var(--primary) 55%,var(--border));box-shadow:0 0 0 3px color-mix(in srgb,var(--primary) 12%,transparent),var(--shadow)}
+.lc-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
+.lc-title{font-weight:700;font-size:16px;word-break:break-word}
+.lc-meta{font-size:12px;color:var(--muted);margin-top:3px}
+.lc-progress{display:flex;align-items:center;gap:12px;margin:14px 0}
+.lc-actions{display:flex;gap:8px;flex-wrap:wrap}
+.lc-actions .spacer{flex:1}
+.dropzone{position:relative;display:flex;flex-direction:column;align-items:center;gap:8px;padding:24px 16px;border:2px dashed var(--border-strong);border-radius:14px;color:var(--muted);text-align:center;font-size:14px;font-weight:500;transition:border-color .15s,color .15s,background .15s}
+.dropzone:hover,.dropzone.drag{border-color:var(--primary);color:var(--primary);background:color-mix(in srgb,var(--primary) 5%,var(--surface))}
+.dropzone input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%}
+.dropzone svg{width:26px;height:26px}
+.empty{text-align:center;padding:36px 20px;color:var(--muted)}
+.empty .big-ico{width:58px;height:58px;border-radius:18px;margin:0 auto 14px;display:grid;place-items:center;background:var(--surface-3);color:var(--muted)}
+.empty .big-ico svg{width:26px;height:26px}
+.empty b{display:block;color:var(--text);font-size:16px;margin-bottom:4px}
+
+/* ================= Diálogo e avisos ================= */
+dialog{border:0;padding:0;border-radius:20px;background:var(--surface);color:var(--text);width:min(420px,calc(100vw - 32px));box-shadow:0 30px 80px -20px rgba(0,0,0,.5)}
+dialog::backdrop{background:rgba(15,23,42,.5);backdrop-filter:blur(3px)}
+.dlg-body{padding:24px 24px 6px}
+.dlg-body h3{font-size:18px;font-weight:700}
+.dlg-body p{color:var(--muted);font-size:14px;line-height:1.55;margin:8px 0 0;white-space:pre-line}
+#dlgInput{margin-top:16px}
+.dlg-actions{display:flex;justify-content:flex-end;gap:8px;padding:18px 24px 22px}
+.toasts{position:fixed;left:50%;bottom:max(20px,env(safe-area-inset-bottom));transform:translateX(-50%);display:grid;gap:8px;z-index:50;width:min(420px,calc(100vw - 32px));pointer-events:none}
+.toast{display:flex;align-items:center;gap:10px;background:var(--toast-bg);color:var(--toast-fg);padding:12px 16px;border-radius:14px;font-size:14px;font-weight:500;box-shadow:0 14px 34px -12px rgba(0,0,0,.45);animation:toast-in .22s ease;transition:opacity .25s,transform .25s}
+.toast .ico{color:#22c55e}
+.toast.error .ico{color:#f87171}
+.toast.out{opacity:0;transform:translateY(8px)}
+@keyframes toast-in{from{opacity:0;transform:translateY(10px)}}
+
+.foot{max-width:640px;margin:26px auto 0;text-align:center;font-size:12px;line-height:1.6;color:var(--faint)}
+
+/* ================= Telas pequenas ================= */
+@media (max-width:520px){
+  .stat{flex-direction:column;text-align:center;gap:6px}
+  .stat-ico{width:34px;height:34px;border-radius:10px}
+  .stat b{font-size:20px}
+  .filters{grid-template-columns:1fr}
+  .brand-sub{display:none}
+  .nav{gap:6px}
+  .nav .btn{padding:11px 4px;font-size:13px;gap:4px}
+  .nav .btn svg{width:16px;height:16px}
+  .lc-actions .btn-danger-ghost .txt{display:none}
+}
+@media (max-width:380px){
+  .shell{padding:12px 12px 28px}
+  .card{padding:14px}
+  #name{font-size:24px}
+  .phone{font-size:18px}
+  .tabs button{font-size:13px;gap:5px}
+  .tabs button .ico svg{width:16px;height:16px}
+  .list-switch .label{display:none}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 </style>
 </head>
 <body>
 
-<!-- LOGIN -->
-<main class="app login hidden" id="loginView">
-  <h1>📞 Número Certo</h1>
-  <div class="muted">Central de ligações</div>
-  <form id="loginForm">
-    <label class="small" for="loginUser">Usuário</label>
-    <input type="text" id="loginUser" autocomplete="username" required>
-    <label class="small" for="loginPass">Senha</label>
-    <input type="password" id="loginPass" autocomplete="current-password" required>
-    <div class="error" id="loginError"></div>
-    <button class="full green" type="submit" id="loginBtn">Entrar</button>
-  </form>
-</main>
+<!-- ================= LOGIN ================= -->
+<div class="login-wrap hidden" id="loginView">
+  <div class="login-card">
+    <div class="brand-logo lg"><span data-icon="phone"></span></div>
+    <h1>Número Certo</h1>
+    <div class="sub">Central de ligações</div>
+    <form id="loginForm" novalidate>
+      <label class="field"><span>Usuário</span>
+        <div class="input-icon"><span data-icon="user"></span><input type="text" id="loginUser" autocomplete="username" autocapitalize="none" spellcheck="false" required></div>
+      </label>
+      <label class="field"><span>Senha</span>
+        <div class="input-icon"><span data-icon="lock"></span><input type="password" id="loginPass" autocomplete="current-password" required></div>
+      </label>
+      <div class="error" id="loginError" role="alert"></div>
+      <button class="btn btn-primary btn-lg block" type="submit" id="loginBtn">Entrar</button>
+    </form>
+  </div>
+  <div class="login-foot"><span data-icon="lock"></span>Acesso restrito</div>
+</div>
 
-<!-- CARREGANDO / ERRO -->
-<main class="app hidden" id="loadingView"><div class="empty" id="loadingText">Carregando…</div></main>
+<!-- ================= CARREGANDO / ERRO ================= -->
+<div class="center-view hidden" id="loadingView">
+  <div class="spinner" id="spinner"></div>
+  <div id="loadingText">Carregando…</div>
+  <button class="btn btn-ghost hidden" id="retryBtn"><span data-icon="rotate"></span>Tentar novamente</button>
+</div>
 
-<!-- APLICATIVO -->
-<main class="app hidden" id="appView">
-  <header>
-    <div><h1>📞 Número Certo</h1><div class="muted">Central de ligações</div></div>
-    <div class="head-right">
-      <select id="listSelect" title="Lista atual"></select>
-      <button class="icon-btn" id="logoutBtn" title="Sair">Sair</button>
+<!-- ================= APLICATIVO ================= -->
+<div class="shell hidden" id="appView">
+  <header class="topbar">
+    <div class="brand">
+      <div class="brand-logo"><span data-icon="phone"></span></div>
+      <div><div class="brand-name">Número Certo</div><div class="brand-sub">Central de ligações</div></div>
+    </div>
+    <div class="top-actions">
+      <button class="icon-btn" id="themeBtn" title="Alternar tema claro/escuro" aria-label="Alternar tema"></button>
+      <button class="icon-btn" id="logoutBtn" title="Sair" aria-label="Sair"><span data-icon="logout"></span></button>
     </div>
   </header>
 
-  <div class="tabs">
-    <button id="tabDial" class="active" data-tab="dial">Discador</button>
-    <button id="tabReport" data-tab="report">Relatórios</button>
-    <button id="tabLists" data-tab="lists">Listas</button>
+  <div class="list-switch">
+    <span data-icon="layers"></span><span class="label">Lista</span>
+    <select class="select" id="listSelect" aria-label="Lista atual"></select>
   </div>
 
-  <div class="sync hidden" id="sync"></div>
+  <nav class="tabs" role="tablist">
+    <button id="tabDial" data-tab="dial" class="active"><span data-icon="phone"></span>Discador</button>
+    <button id="tabReport" data-tab="report"><span data-icon="chart"></span>Relatórios</button>
+    <button id="tabLists" data-tab="lists"><span data-icon="list"></span>Listas</button>
+  </nav>
 
-  <div id="statsBlock">
+  <div class="sync hidden" id="sync" role="status"></div>
+
+  <section class="card stats-card" id="statsBlock">
     <div class="stats">
-      <div class="stat"><b id="done">0</b><small>Realizados</small></div>
-      <div class="stat"><b id="pending">0</b><small>Pendentes</small></div>
-      <div class="stat"><b id="interested">0</b><small>Interessados</small></div>
+      <div class="stat"><span class="stat-ico t-blue"><span data-icon="check-circle"></span></span><div><b id="done">0</b><small>Realizados</small></div></div>
+      <div class="stat"><span class="stat-ico t-amber"><span data-icon="clock"></span></span><div><b id="pending">0</b><small>Pendentes</small></div></div>
+      <div class="stat"><span class="stat-ico t-green"><span data-icon="star"></span></span><div><b id="interested">0</b><small>Interessados</small></div></div>
     </div>
-    <div class="bar"><div id="progress"></div></div>
-  </div>
+    <div class="progress"><div class="track"><div id="progress"></div></div><span class="pct" id="progressPct">0%</span></div>
+  </section>
 
-  <!-- DISCADOR -->
+  <!-- ================= DISCADOR ================= -->
   <section id="dial">
-    <div class="contact">
-      <div class="muted" id="position"></div>
-      <h2 id="name"></h2>
-      <div class="phone" id="number"></div>
-      <div class="warning" id="warning"></div>
-      <div class="small" id="currentStatus"></div>
-    </div>
-    <div class="actions">
-      <a class="btn green" id="call">☎ Ligar normal</a>
-      <a class="btn blue" id="whatsapp" target="_blank" rel="noopener">WhatsApp ↗</a>
-    </div>
-    <button class="full outline" id="copyBtn">▢ Copiar número</button>
-    <h3>Resultado da ligação</h3>
-    <div class="status-grid" id="statusGrid"></div>
-    <textarea id="note" placeholder="Observações sobre o cliente (opcional)"></textarea>
-    <div class="nav">
-      <button id="prev">‹ Anterior</button>
-      <button id="next">Próximo ›</button>
+    <div class="split">
+      <div class="card contact-card">
+        <div class="contact-top"><span class="eyebrow" id="position"></span><span class="badge" id="currentStatus"></span></div>
+        <div class="avatar" id="avatar"></div>
+        <h2 id="name"></h2>
+        <div class="phone" id="number"></div>
+        <div class="warn t-amber hidden" id="warning"><span data-icon="alert"></span>Confira este telefone: formato possivelmente incompleto</div>
+        <div class="contact-actions">
+          <a class="btn btn-primary btn-lg block" id="call"><span data-icon="phone"></span>Ligar</a>
+          <div class="row-2">
+            <a class="btn btn-wa" id="whatsapp" target="_blank" rel="noopener"><span data-icon="message"></span>WhatsApp</a>
+            <button class="btn btn-ghost" id="copyBtn"><span data-icon="copy"></span>Copiar</button>
+          </div>
+        </div>
+        <div class="nav">
+          <button class="btn btn-ghost" id="prev" title="Anterior (←)"><span data-icon="chevron-left"></span>Anterior</button>
+          <button class="btn btn-ghost" id="nextPending" title="Ir para o próximo contato sem resultado"><span data-icon="skip"></span>Pendente</button>
+          <button class="btn btn-ghost" id="next" title="Próximo (→)">Próximo<span data-icon="chevron-right"></span></button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head"><h3>Resultado da ligação</h3><span class="hint">Marcar avança para o próximo</span></div>
+        <div class="status-grid" id="statusGrid"></div>
+        <div class="card-head mt"><h3>Observações</h3><span class="hint" id="noteState"></span></div>
+        <textarea id="note" placeholder="Anote algo sobre este cliente (opcional)"></textarea>
+      </div>
     </div>
   </section>
 
-  <!-- RELATÓRIOS -->
+  <!-- ================= RELATÓRIOS ================= -->
   <section id="report" class="hidden">
-    <h3>Relatório de atendimento</h3>
-    <div id="breakdown"></div>
-    <h3>Contatos</h3>
-    <select id="filter"></select>
-    <div class="list" id="contactList"></div>
-    <button class="full green" id="csvBtn">↓ Baixar relatório para Excel (.csv)</button>
-    <button class="full outline" id="backupBtn">↓ Baixar cópia desta lista (.json)</button>
-    <button class="full outline danger" id="resetBtn">Limpar apenas os resultados desta lista</button>
+    <div class="split">
+      <div class="card">
+        <div class="card-head"><h3>Resultado por status</h3><span class="hint" id="reportRate"></span></div>
+        <div id="breakdown"></div>
+        <div class="stack mt">
+          <button class="btn btn-primary block" id="csvBtn"><span data-icon="file"></span>Baixar relatório para Excel (.csv)</button>
+          <button class="btn btn-ghost block" id="backupBtn"><span data-icon="download"></span>Baixar cópia desta lista (.json)</button>
+          <button class="btn btn-danger-ghost block" id="resetBtn"><span data-icon="rotate"></span>Limpar resultados desta lista</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-head"><h3>Contatos</h3><span class="hint" id="contactCount"></span></div>
+        <div class="filters">
+          <div class="input-icon"><span data-icon="search"></span><input type="search" id="search" placeholder="Buscar nome ou telefone"></div>
+          <select class="select" id="filter" aria-label="Filtrar por status"></select>
+        </div>
+        <div class="contact-list" id="contactList"></div>
+      </div>
+    </div>
   </section>
 
-  <!-- LISTAS -->
+  <!-- ================= LISTAS ================= -->
   <section id="lists" class="hidden">
-    <h3>Suas listas</h3>
-    <div id="listCards"></div>
-
-    <h3>Nova lista</h3>
-    <label class="small" for="newListName">Nome da lista</label>
-    <input type="text" id="newListName" placeholder="Ex.: Lista 02 — Águas Claras" maxlength="120">
-    <div class="small">Cole um contato por linha: Nome;Telefone</div>
-    <textarea id="newContacts" placeholder="Orlando;61993171605&#10;Maria;61999999999"></textarea>
-    <button class="full green" id="createBtn">Criar lista</button>
-
-    <h3>Importar cópia de segurança</h3>
-    <div class="small">Aceita o .json baixado por este sistema ou pela versão antiga do discador (arquivo único). Cria uma lista nova com os resultados.</div>
-    <input type="file" id="importFile" accept=".json,application/json">
+    <div class="split wide-left">
+      <div>
+        <div class="section-title"><h3>Suas listas</h3><span class="hint" id="listsCount"></span></div>
+        <div class="cards" id="listCards"></div>
+      </div>
+      <div class="stack">
+        <div class="card">
+          <div class="card-head"><h3><span data-icon="plus"></span>Nova lista</h3></div>
+          <label class="field"><span>Nome da lista</span>
+            <input type="text" id="newListName" placeholder="Ex.: Lista 02 — Águas Claras" maxlength="120">
+          </label>
+          <label class="field"><span>Contatos <em>— um por linha: Nome;Telefone</em></span>
+            <textarea id="newContacts" rows="6" placeholder="Orlando;61993171605&#10;Maria;61999999999"></textarea>
+          </label>
+          <div class="hint" id="pasteCount" style="margin:-6px 0 12px"></div>
+          <button class="btn btn-primary block" id="createBtn"><span data-icon="plus"></span>Criar lista</button>
+        </div>
+        <div class="card">
+          <div class="card-head"><h3><span data-icon="upload"></span>Importar cópia de segurança</h3></div>
+          <p class="hint" style="margin:-4px 0 12px">Aceita o .json baixado por este sistema ou pela versão antiga do discador. Cria uma lista nova com os resultados.</p>
+          <label class="dropzone" id="dropzone">
+            <input type="file" id="importFile" accept=".json,application/json">
+            <span data-icon="upload"></span>
+            <span>Clique ou arraste o arquivo .json aqui</span>
+          </label>
+        </div>
+      </div>
+    </div>
   </section>
 
-  <footer>Os resultados ficam salvos no servidor e aparecem em qualquer aparelho em que você entrar. Se a internet cair, as marcações ficam guardadas neste aparelho e são enviadas assim que a conexão voltar. A ligação normal abre o discador, se permitido pelo aparelho; o WhatsApp Business depende da configuração de links do Android.</footer>
-</main>
+  <footer class="foot">Os resultados ficam salvos no servidor e aparecem em qualquer aparelho em que você entrar. Se a internet cair, as marcações ficam guardadas neste aparelho e são enviadas quando a conexão voltar.</footer>
+</div>
+
+<!-- ================= DIÁLOGO ================= -->
+<dialog id="dlg">
+  <form id="dlgForm">
+    <div class="dlg-body">
+      <h3 id="dlgTitle"></h3>
+      <p id="dlgMsg"></p>
+      <input type="text" id="dlgInput" class="hidden" maxlength="120">
+    </div>
+    <div class="dlg-actions">
+      <button type="button" class="btn btn-ghost" id="dlgCancel">Cancelar</button>
+      <button type="button" class="btn btn-primary" id="dlgOk">Confirmar</button>
+    </div>
+  </form>
+</dialog>
+<div class="toasts" id="toasts" aria-live="polite"></div>
 
 <script>
+/* ================= Configuração ================= */
 const STATUSES = ['Interessado','Não interessado','Interagiu','Atendeu','Não atendeu','Número errado','Não existe','Retornar depois','Visita agendada','Chamar no WhatsApp'];
+const TONE = {
+  'Interessado':'green','Não interessado':'red','Interagiu':'blue','Atendeu':'teal','Não atendeu':'amber',
+  'Número errado':'orange','Não existe':'gray','Retornar depois':'purple','Visita agendada':'green','Chamar no WhatsApp':'wa',
+};
 const POSITIVE = ['Interessado','Visita agendada'];
+
+const ICONS = {
+  phone:'<path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>',
+  message:'<path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/>',
+  copy:'<rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>',
+  'chevron-left':'<polyline points="15 18 9 12 15 6"/>',
+  'chevron-right':'<polyline points="9 18 15 12 9 6"/>',
+  skip:'<polygon points="5 4 15 12 5 20 5 4"/><line x1="19" y1="5" x2="19" y2="19"/>',
+  chart:'<line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/>',
+  list:'<line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/>',
+  layers:'<polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/>',
+  logout:'<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>',
+  download:'<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>',
+  upload:'<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>',
+  trash:'<polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>',
+  edit:'<path d="M17 3a2.83 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/>',
+  plus:'<line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>',
+  search:'<circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>',
+  rotate:'<polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/>',
+  check:'<polyline points="20 6 9 17 4 12"/>',
+  'check-circle':'<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>',
+  clock:'<circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>',
+  star:'<polygon points="12 2 15.09 8.26 22 9.24 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>',
+  alert:'<circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>',
+  file:'<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>',
+  lock:'<rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>',
+  user:'<path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>',
+  sun:'<circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>',
+  moon:'<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>',
+  wifi:'<line x1="1" y1="1" x2="23" y2="23"/><path d="M16.72 11.06A10.94 10.94 0 0 1 19 12.55"/><path d="M5 12.55a10.94 10.94 0 0 1 5.17-2.39"/><path d="M10.71 5.05A16 16 0 0 1 22.58 9"/><path d="M1.42 9a15.91 15.91 0 0 1 4.7-2.88"/><path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><line x1="12" y1="20" x2="12.01" y2="20"/>',
+  inbox:'<polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/>',
+};
+const svg = (name) => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONS[name] || ''}</svg>`;
+function iconEl(name) { const s = document.createElement('span'); s.className = 'ico'; s.innerHTML = svg(name); return s; }
+document.querySelectorAll('[data-icon]').forEach((n) => { n.classList.add('ico'); n.innerHTML = svg(n.dataset.icon); });
+
 const $ = (id) => document.getElementById(id);
 
 let lists = [];        // resumo de todas as listas
@@ -176,13 +527,92 @@ let list = null;       // lista aberta: { id, name, created_at, contacts: [...] 
 let index = 0;
 let tab = 'dial';
 
-/* ---------- armazenamento local (somente conveniências e fila offline) ---------- */
+/* ================= Armazenamento local (conveniências e fila offline) ================= */
 const store = {
   get(k, d) { try { const v = localStorage.getItem(k); return v == null ? d : JSON.parse(v); } catch { return d; } },
   set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} },
 };
 
-/* ---------- API ---------- */
+/* ================= Utilidades ================= */
+function el(tag, props = {}, ...children) {
+  const node = Object.assign(document.createElement(tag), props);
+  node.append(...children.filter((c) => c != null));
+  return node;
+}
+function phone(c) { const n = String(c.phone).replace(/\D/g, ''); return n.startsWith('61') && n.length >= 10 ? n : '61' + n; }
+function fmtPhone(n) {
+  if (n.length === 11) return `(${n.slice(0, 2)}) ${n.slice(2, 7)}-${n.slice(7)}`;
+  if (n.length === 10) return `(${n.slice(0, 2)}) ${n.slice(2, 6)}-${n.slice(6)}`;
+  return n;
+}
+function initials(name) { return name.trim().split(/\s+/).slice(0, 2).map((w) => w[0]).join('').toUpperCase() || '?'; }
+function norm(s) { return String(s).normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase(); }
+function slug(s) { return norm(s).replace(/[^\w]+/g, '-').replace(/^-|-$/g, '') || 'lista'; }
+function pct(a, b) { return b ? Math.round((100 * a) / b) : 0; }
+function toneOf(status) { return status ? TONE[status] || 'gray' : 'gray'; }
+function current() { return list?.contacts[index]; }
+function summary(l) {
+  if (list && l.id === list.id) {
+    const cs = list.contacts;
+    return { total: cs.length, done: cs.filter((c) => c.status).length, interested: cs.filter((c) => POSITIVE.includes(c.status)).length };
+  }
+  return l;
+}
+function download(name, content, type) {
+  const url = URL.createObjectURL(new Blob([content], { type }));
+  const a = el('a', { href: url, download: name });
+  document.body.append(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+/* ================= Avisos e diálogos ================= */
+function toast(message, type = 'ok') {
+  const t = el('div', { className: 'toast ' + type }, iconEl(type === 'error' ? 'alert' : 'check'), el('span', { textContent: message }));
+  $('toasts').append(t);
+  setTimeout(() => { t.classList.add('out'); setTimeout(() => t.remove(), 300); }, type === 'error' ? 4500 : 2600);
+}
+
+function ask({ title, message = '', confirmText = 'Confirmar', cancelText = 'Cancelar', danger = false, input = null }) {
+  return new Promise((resolve) => {
+    const d = $('dlg'), inp = $('dlgInput'), ok = $('dlgOk');
+    $('dlgTitle').textContent = title;
+    $('dlgMsg').textContent = message;
+    $('dlgMsg').classList.toggle('hidden', !message);
+    inp.classList.toggle('hidden', !input);
+    if (input) { inp.value = input.value || ''; inp.placeholder = input.placeholder || ''; }
+    ok.textContent = confirmText;
+    ok.className = 'btn ' + (danger ? 'btn-danger' : 'btn-primary');
+    $('dlgCancel').textContent = cancelText;
+    let settled = false;
+    const done = (v) => { if (settled) return; settled = true; d.close(); resolve(v); };
+    ok.onclick = () => done(input ? inp.value.trim() || null : true);
+    $('dlgCancel').onclick = () => done(input ? null : false);
+    d.oncancel = (e) => { e.preventDefault(); done(input ? null : false); };
+    $('dlgForm').onsubmit = (e) => { e.preventDefault(); ok.click(); };
+    d.showModal();
+    if (input) { inp.focus(); inp.select(); } else ok.focus();
+  });
+}
+
+/* ================= Tema ================= */
+function isDark() {
+  const t = document.documentElement.dataset.theme;
+  return t ? t === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches;
+}
+function renderTheme() {
+  $('themeBtn').innerHTML = svg(isDark() ? 'sun' : 'moon');
+  $('themeColor').content = isDark() ? '#0a0f1a' : '#f2f5f9';
+}
+$('themeBtn').onclick = () => {
+  const next = isDark() ? 'light' : 'dark';
+  document.documentElement.dataset.theme = next;
+  store.set('nc-theme', next);
+  renderTheme();
+};
+matchMedia('(prefers-color-scheme: dark)').addEventListener?.('change', renderTheme);
+renderTheme();
+
+/* ================= API ================= */
 class ApiError extends Error { constructor(status, msg) { super(msg); this.status = status; } }
 
 async function api(path, { method = 'GET', body } = {}) {
@@ -199,12 +629,12 @@ async function api(path, { method = 'GET', body } = {}) {
   }
   let data = null;
   try { data = await res.json(); } catch {}
-  if (res.status === 401 && path !== 'login') { showLogin(); throw new ApiError(401, 'Sessão expirada.'); }
+  if (res.status === 401 && path !== 'login') { showLogin(); throw new ApiError(401, 'Sessão expirada. Entre novamente.'); }
   if (!res.ok) throw new ApiError(res.status, data?.error || 'Falha na comunicação com o servidor.');
   return data;
 }
 
-/* ---------- fila de salvamento (resiste a queda de internet) ---------- */
+/* ================= Fila de salvamento (resiste a queda de internet) ================= */
 let queue = store.get('nc-pending', {});   // { contactId: { status?, note? } }
 let flushing = false, flushAgain = false, syncError = false;
 
@@ -240,48 +670,75 @@ async function flush() {
 }
 
 function renderSync() {
-  const n = Object.keys(queue).length, el = $('sync');
-  el.classList.toggle('hidden', !n);
-  el.classList.toggle('error', syncError);
-  if (n) el.textContent = syncError
-    ? `Sem conexão — ${n} alteração(ões) guardada(s) neste aparelho. Serão enviadas quando a internet voltar.`
-    : `Salvando ${n} alteração(ões)…`;
+  const n = Object.keys(queue).length, box = $('sync');
+  box.classList.toggle('hidden', !syncError || !n);
+  box.className = box.className.replace(/\bt-\w+/g, '').trim() + (syncError ? ' t-red' : ' t-amber');
+  box.replaceChildren(iconEl('wifi'), el('span', { textContent: `Sem conexão — ${n} alteração(ões) guardada(s) neste aparelho. Serão enviadas quando a internet voltar.` }));
+  renderNoteState();
+}
+
+function renderNoteState() {
+  const c = current();
+  if (!c) return;
+  const waiting = noteTimer || (queue[c.id] && 'note' in queue[c.id]);
+  $('noteState').textContent = waiting ? (syncError ? 'Aguardando conexão…' : 'Salvando…') : (c.note ? 'Salvo ✓' : '');
 }
 
 setInterval(() => { if (Object.keys(queue).length) flush(); }, 15000);
 window.addEventListener('online', flush);
 window.addEventListener('beforeunload', (e) => { commitNote(); if (Object.keys(queue).length) e.preventDefault(); });
 
-/* ---------- telas ---------- */
+/* ================= Telas ================= */
 function showView(id) {
   for (const v of ['loginView', 'loadingView', 'appView']) $(v).classList.toggle('hidden', v !== id);
 }
-function showLogin() { showView('loginView'); $('loginPass').value = ''; $('loginUser').focus(); }
-function showMessage(msg) { $('loadingText').textContent = msg; showView('loadingView'); }
+function showLogin() {
+  if ($('dlg').open) $('dlg').close();
+  showView('loginView');
+  $('loginPass').value = '';
+  setTimeout(() => ($('loginUser').value ? $('loginPass') : $('loginUser')).focus(), 50);
+}
+function showMessage(msg, isError = false) {
+  $('loadingText').textContent = msg;
+  $('spinner').classList.toggle('hidden', isError);
+  $('retryBtn').classList.toggle('hidden', !isError);
+  showView('loadingView');
+}
+$('retryBtn').onclick = () => boot();
 
 $('loginForm').addEventListener('submit', async (e) => {
   e.preventDefault();
+  const user = $('loginUser').value.trim(), password = $('loginPass').value;
+  if (!user || !password) { $('loginError').textContent = 'Preencha usuário e senha.'; return; }
   $('loginError').textContent = '';
   $('loginBtn').disabled = true;
+  $('loginBtn').textContent = 'Entrando…';
   try {
-    await api('login', { method: 'POST', body: { user: $('loginUser').value.trim(), password: $('loginPass').value } });
+    await api('login', { method: 'POST', body: { user, password } });
     await boot();
   } catch (err) {
     $('loginError').textContent = err.message;
   } finally {
     $('loginBtn').disabled = false;
+    $('loginBtn').textContent = 'Entrar';
   }
 });
 
 $('logoutBtn').onclick = async () => {
   commitNote();
-  if (Object.keys(queue).length && !confirm('Há alterações ainda não enviadas. Sair mesmo assim? Elas serão enviadas no próximo login neste aparelho.')) return;
+  const n = Object.keys(queue).length;
+  const ok = await ask({
+    title: 'Sair do sistema?',
+    message: n ? `Há ${n} alteração(ões) ainda não enviada(s). Elas serão enviadas no próximo login neste aparelho.` : '',
+    confirmText: 'Sair',
+  });
+  if (!ok) return;
   try { await api('logout', { method: 'POST' }); } catch {}
   list = null; lists = [];
   showLogin();
 };
 
-/* ---------- carregamento ---------- */
+/* ================= Carregamento ================= */
 async function loadLists() { lists = await api('lists'); }
 
 async function openList(id, { keepTab = false } = {}) {
@@ -310,40 +767,17 @@ async function boot() {
     else { list = null; switchTab('lists'); render(); }
     flush();
   } catch (err) {
-    if (err.status !== 401) showMessage('Não foi possível carregar: ' + err.message + ' Recarregue a página.');
+    if (err.status !== 401) showMessage('Não foi possível carregar. ' + err.message, true);
   }
 }
 
 // Ao voltar para a aba (ex.: usou em outro aparelho), atualiza os dados se não houver nada pendente.
 document.addEventListener('visibilitychange', async () => {
-  if (document.visibilityState !== 'visible' || !list || noteTimer || Object.keys(queue).length) return;
+  if (document.visibilityState !== 'visible' || !list || noteTimer || $('dlg').open || Object.keys(queue).length) return;
   try { await loadLists(); await openList(list.id, { keepTab: true }); } catch {}
 });
 
-/* ---------- utilidades ---------- */
-function phone(c) { const n = String(c.phone).replace(/\D/g, ''); return n.startsWith('61') && n.length >= 10 ? n : '61' + n; }
-function current() { return list?.contacts[index]; }
-function summary(l) {
-  if (list && l.id === list.id) {
-    const cs = list.contacts;
-    return { total: cs.length, done: cs.filter((c) => c.status).length, interested: cs.filter((c) => POSITIVE.includes(c.status)).length };
-  }
-  return l;
-}
-function el(tag, props = {}, ...children) {
-  const node = Object.assign(document.createElement(tag), props);
-  node.append(...children);
-  return node;
-}
-function download(name, content, type) {
-  const url = URL.createObjectURL(new Blob([content], { type }));
-  const a = el('a', { href: url, download: name });
-  document.body.append(a); a.click(); a.remove();
-  setTimeout(() => URL.revokeObjectURL(url), 1000);
-}
-function slug(s) { return s.normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^\w]+/g, '-').replace(/^-|-$/g, '').toLowerCase() || 'lista'; }
-
-/* ---------- navegação ---------- */
+/* ================= Navegação ================= */
 function switchTab(t) {
   if (!list && t !== 'lists') t = 'lists';
   tab = t;
@@ -361,11 +795,29 @@ function go(i) {
   store.set('nc-index-' + list.id, index);
   switchTab('dial');
   render();
+  if (innerWidth < 900) scrollTo({ top: 0, behavior: 'smooth' });
+}
+function nextPendingIndex() {
+  const cs = list.contacts, n = cs.length;
+  for (let k = 1; k <= n; k++) { const i = (index + k) % n; if (!cs[i].status) return i; }
+  return -1;
 }
 $('prev').onclick = () => go(index - 1);
 $('next').onclick = () => go(index + 1);
+$('nextPending').onclick = () => {
+  const i = nextPendingIndex();
+  if (i < 0) toast('Todos os contatos desta lista já têm resultado.');
+  else go(i);
+};
 
-/* ---------- ações do discador ---------- */
+document.addEventListener('keydown', (e) => {
+  if (tab !== 'dial' || !list || $('dlg').open || e.altKey || e.ctrlKey || e.metaKey) return;
+  if (e.target.closest('input, textarea, select')) return;
+  if (e.key === 'ArrowLeft') { e.preventDefault(); go(index - 1); }
+  if (e.key === 'ArrowRight') { e.preventDefault(); go(index + 1); }
+});
+
+/* ================= Ações do discador ================= */
 function mark(s) {
   commitNote();
   const c = current();
@@ -373,7 +825,7 @@ function mark(s) {
   c.updated_at = new Date().toISOString();
   enqueue(c.id, { status: s });
   if (index < list.contacts.length - 1) { index++; store.set('nc-index-' + list.id, index); }
-  else switchTab('report');
+  else { switchTab('report'); toast('Você chegou ao fim da lista!'); }
   render();
 }
 
@@ -384,6 +836,7 @@ $('note').addEventListener('input', () => {
   noteContact = c;
   clearTimeout(noteTimer);
   noteTimer = setTimeout(commitNote, 800);
+  renderNoteState();
 });
 function commitNote() {
   if (!noteTimer) return;
@@ -393,30 +846,33 @@ function commitNote() {
 
 $('copyBtn').onclick = async () => {
   const n = phone(current());
-  try { await navigator.clipboard.writeText(n); alert('Número copiado: ' + n); }
+  try { await navigator.clipboard.writeText(n); toast('Número copiado: ' + fmtPhone(n)); }
   catch { prompt('Copie o número:', n); }
 };
 
-/* ---------- renderização ---------- */
+/* ================= Renderização ================= */
 function render() {
   renderHeader();
   renderStats();
   renderSync();
   $('tabDial').disabled = $('tabReport').disabled = !list;
-  if (list) { renderDial(); renderBreakdown(); renderContactList(); }
-  renderListCards();
+  if (list) {
+    renderDial();
+    if (tab === 'report') { renderBreakdown(); renderContactList(); }
+  }
+  if (tab === 'lists') renderListCards();
 }
 
 function renderHeader() {
   const sel = $('listSelect');
   sel.innerHTML = '';
-  if (!lists.length) sel.add(new Option('Nenhuma lista', ''));
-  for (const l of lists) sel.add(new Option(`${l.name} (${summary(l).total})`, l.id));
+  if (!lists.length) sel.add(new Option('Nenhuma lista criada', ''));
+  for (const l of lists) { const s = summary(l); sel.add(new Option(`${l.name}  ·  ${s.done}/${s.total}`, l.id)); }
   sel.value = list ? String(list.id) : '';
   sel.disabled = !lists.length;
 }
 $('listSelect').onchange = async (e) => {
-  try { await openList(Number(e.target.value)); } catch (err) { alert(err.message); render(); }
+  try { await openList(Number(e.target.value)); } catch (err) { toast(err.message, 'error'); render(); }
 };
 
 function renderStats() {
@@ -426,71 +882,118 @@ function renderStats() {
   $('done').textContent = s.done;
   $('pending').textContent = s.total - s.done;
   $('interested').textContent = s.interested;
-  $('progress').style.width = (100 * s.done / s.total || 0) + '%';
+  $('progress').style.width = pct(s.done, s.total) + '%';
+  $('progressPct').textContent = pct(s.done, s.total) + '%';
 }
 
 function renderDial() {
-  const c = current(), n = phone(c);
-  $('position').textContent = `CONTATO ${index + 1} DE ${list.contacts.length}`;
+  const c = current(), n = phone(c), tone = toneOf(c.status);
+  $('position').textContent = `Contato ${index + 1} de ${list.contacts.length}`;
+  const badge = $('currentStatus');
+  badge.textContent = c.status || 'Pendente';
+  badge.className = 'badge t-' + tone;
+  const av = $('avatar');
+  av.textContent = initials(c.name);
+  av.className = 'avatar t-' + (c.status ? tone : 'blue');
   $('name').textContent = c.name;
-  $('number').textContent = n;
-  $('warning').textContent = [10, 11].includes(n.length) ? '' : 'Confira este telefone: formato possivelmente incompleto.';
-  $('currentStatus').textContent = c.status || '';
+  $('number').textContent = fmtPhone(n);
+  $('warning').classList.toggle('hidden', [10, 11].includes(n.length));
   $('call').href = 'tel:+55' + n;
   $('whatsapp').href = 'https://wa.me/55' + n;
   if (document.activeElement !== $('note')) $('note').value = c.note || '';
+
   const grid = $('statusGrid');
-  grid.innerHTML = '';
-  for (const s of STATUSES) {
-    const b = el('button', { textContent: s, onclick: () => mark(s) });
-    if (c.status === s) b.classList.add('selected');
-    grid.append(b);
-  }
+  grid.replaceChildren(...STATUSES.map((s) => el('button',
+    { className: 'status-btn t-' + TONE[s] + (c.status === s ? ' selected' : ''), onclick: () => mark(s) },
+    el('span', { className: 'dot' }), el('span', { textContent: s }), c.status === s ? el('span', { className: 'check', innerHTML: svg('check') }) : null)));
+
   $('prev').disabled = index === 0;
   $('next').disabled = index === list.contacts.length - 1;
+  $('nextPending').disabled = nextPendingIndex() < 0;
+  renderNoteState();
 }
 
 function renderBreakdown() {
-  const box = $('breakdown');
-  box.innerHTML = '';
-  for (const s of STATUSES) {
-    box.append(el('div', { className: 'row' },
-      el('span', { textContent: s }),
-      el('b', { textContent: list.contacts.filter((c) => c.status === s).length })));
-  }
+  const cs = list.contacts, total = cs.length, s = summary(list);
+  $('reportRate').textContent = s.done ? `${pct(s.interested, s.done)}% de interesse entre os realizados` : '';
+  const rows = [...STATUSES.map((st) => [st, TONE[st], cs.filter((c) => c.status === st).length]), ['Pendentes', 'gray', total - s.done]];
+  $('breakdown').replaceChildren(...rows.map(([label, tone, count]) =>
+    el('div', { className: `bk-row t-${tone}` + (count ? '' : ' zero') },
+      el('div', { className: 'bk-top' },
+        el('span', { className: 'dot' }), el('span', { className: 'bk-label', textContent: label }),
+        el('span', { className: 'bk-count', textContent: count }), el('span', { className: 'bk-pct', textContent: pct(count, total) + '%' })),
+      el('div', { className: 'bk-bar' }, el('div', { style: `width:${pct(count, total)}%` })))));
 }
 
 function renderContactList() {
   const f = $('filter');
-  if (!f.options.length) ['Todos', 'Pendente', ...STATUSES].forEach((s) => f.add(new Option(s === 'Pendente' ? 'Pendentes' : s, s)));
-  const box = $('contactList');
-  box.innerHTML = '';
+  if (!f.options.length) {
+    f.add(new Option('Todos os status', 'Todos'));
+    f.add(new Option('Pendentes', 'Pendente'));
+    STATUSES.forEach((s) => f.add(new Option(s, s)));
+  }
+  const q = norm($('search').value.trim()), qd = q.replace(/\D/g, '');
+  const rows = [];
   list.contacts.forEach((c, i) => {
     const s = c.status || 'Pendente';
     if (f.value !== 'Todos' && f.value !== s) return;
-    box.append(el('button', { textContent: `${i + 1}. ${c.name} — ${phone(c)} | ${s}`, onclick: () => go(i) }));
+    if (q && !norm(c.name).includes(q) && !(qd && phone(c).includes(qd))) return;
+    rows.push(el('button', { className: 'contact-row' + (i === index ? ' current' : ''), onclick: () => go(i) },
+      el('span', { className: 'idx', textContent: i + 1 }),
+      el('span', { className: 'cr-main' }, el('b', { textContent: c.name }), el('small', { textContent: fmtPhone(phone(c)) })),
+      el('span', { className: 'badge t-' + toneOf(c.status), textContent: s })));
   });
+  $('contactCount').textContent = `${rows.length} de ${list.contacts.length}`;
+  $('contactList').replaceChildren(...(rows.length ? rows : [el('div', { className: 'empty-small', textContent: 'Nenhum contato encontrado.' })]));
 }
 $('filter').onchange = renderContactList;
+$('search').oninput = renderContactList;
 
 function renderListCards() {
   const box = $('listCards');
-  box.innerHTML = '';
-  if (!lists.length) { box.append(el('div', { className: 'empty', textContent: 'Nenhuma lista ainda. Crie a primeira abaixo.' })); return; }
-  for (const l of lists) {
-    const s = summary(l);
-    const isCurrent = list && l.id === list.id;
-    box.append(el('div', { className: 'card' + (isCurrent ? ' current' : '') },
-      el('div', { className: 'title', textContent: l.name + (isCurrent ? ' · aberta' : '') }),
-      el('div', { className: 'small', textContent: `${s.done} de ${s.total} realizados · ${s.interested} interessados · criada em ${new Date(l.created_at).toLocaleDateString('pt-BR')}` }),
-      el('div', { className: 'btns' },
-        el('button', { className: 'green', textContent: 'Abrir', onclick: () => openList(l.id).catch((e) => alert(e.message)) }),
-        el('button', { className: 'outline', textContent: 'Renomear', onclick: () => renameList(l) }),
-        el('button', { className: 'outline danger', textContent: 'Excluir', onclick: () => deleteList(l) }))));
+  $('listsCount').textContent = lists.length ? `${lists.length} lista(s)` : '';
+  if (!lists.length) {
+    box.replaceChildren(el('div', { className: 'card empty' },
+      el('div', { className: 'big-ico', innerHTML: svg('inbox') }),
+      el('b', { textContent: 'Nenhuma lista ainda' }),
+      el('div', { textContent: 'Crie a primeira colando os contatos ao lado, ou importe uma cópia de segurança.' })));
+    return;
   }
+  box.replaceChildren(...lists.map((l) => {
+    const s = summary(l), isCurrent = list && l.id === list.id, p = pct(s.done, s.total);
+    return el('div', { className: 'card list-card' + (isCurrent ? ' current' : '') },
+      el('div', { className: 'lc-head' },
+        el('div', {}, el('div', { className: 'lc-title', textContent: l.name }),
+          el('div', { className: 'lc-meta', textContent: `${s.total} contatos · ${s.interested} interessado(s) · criada em ${new Date(l.created_at).toLocaleDateString('pt-BR')}` })),
+        isCurrent ? el('span', { className: 'badge t-green', textContent: 'Aberta' }) : null),
+      el('div', { className: 'lc-progress' }, el('div', { className: 'track' }, el('div', { style: `width:${p}%` })), el('span', { className: 'pct', textContent: p + '%' })),
+      el('div', { className: 'lc-actions' },
+        el('button', { className: 'btn btn-sm ' + (isCurrent ? 'btn-ghost' : 'btn-primary'), onclick: () => openList(l.id).catch((e) => toast(e.message, 'error')) },
+          iconEl('phone'), isCurrent ? 'Continuar' : 'Abrir'),
+        el('button', { className: 'btn btn-sm btn-ghost', onclick: () => renameList(l) }, iconEl('edit'), 'Renomear'),
+        el('span', { className: 'spacer' }),
+        el('button', { className: 'btn btn-sm btn-danger-ghost', title: 'Excluir lista', onclick: () => deleteList(l) }, iconEl('trash'), el('span', { className: 'txt', textContent: 'Excluir' }))));
+  }));
 }
 
-/* ---------- gestão de listas ---------- */
+/* ================= Gestão de listas ================= */
+function parseContacts(text) {
+  const contacts = [], bad = [];
+  text.split(/\r?\n/).forEach((line, i) => {
+    if (!line.trim()) return;
+    const p = line.split(/[;\t,]/);
+    const c = { name: (p[0] || '').trim(), phone: (p[1] || '').replace(/\D/g, '') };
+    if (c.name && c.phone) contacts.push(c); else bad.push(i + 1);
+  });
+  return { contacts, bad };
+}
+
+$('newContacts').addEventListener('input', () => {
+  const { contacts, bad } = parseContacts($('newContacts').value);
+  $('pasteCount').textContent = !contacts.length && !bad.length ? ''
+    : `${contacts.length} contato(s) pronto(s)` + (bad.length ? ` · linha(s) com problema: ${bad.slice(0, 5).join(', ')}${bad.length > 5 ? '…' : ''}` : '');
+});
+
 async function createList(name, contacts) {
   const { id } = await api('lists', { method: 'POST', body: { name, contacts } });
   await loadLists();
@@ -498,26 +1001,24 @@ async function createList(name, contacts) {
 }
 
 $('createBtn').onclick = async () => {
-  const lines = $('newContacts').value.split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
-  const contacts = lines.map((l) => { const p = l.split(/[;\t,]/); return { name: (p[0] || '').trim(), phone: (p[1] || '').replace(/\D/g, '') }; });
-  const bad = contacts.findIndex((c) => !c.name || !c.phone);
-  if (!contacts.length || bad >= 0) { alert(contacts.length ? `Linha ${bad + 1} inválida. Use Nome;Telefone, um por linha.` : 'Cole ao menos um contato.'); return; }
+  const { contacts, bad } = parseContacts($('newContacts').value);
+  if (!contacts.length) { toast('Cole ao menos um contato no formato Nome;Telefone.', 'error'); return; }
+  if (bad.length) { toast(`Corrija a(s) linha(s) ${bad.slice(0, 5).join(', ')}: use Nome;Telefone.`, 'error'); return; }
   const name = $('newListName').value.trim() || 'Lista ' + new Date().toLocaleDateString('pt-BR');
   $('createBtn').disabled = true;
   try {
     await createList(name, contacts);
-    $('newContacts').value = ''; $('newListName').value = '';
-  } catch (err) { alert(err.message); }
+    $('newContacts').value = ''; $('newListName').value = ''; $('pasteCount').textContent = '';
+    toast(`Lista "${name}" criada com ${contacts.length} contatos.`);
+  } catch (err) { toast(err.message, 'error'); }
   finally { $('createBtn').disabled = false; }
 };
 
-$('importFile').onchange = async (e) => {
-  const file = e.target.files[0];
-  e.target.value = '';
+async function importFile(file) {
   if (!file) return;
   let x;
-  try { x = JSON.parse(await file.text()); } catch { alert('Arquivo .json inválido.'); return; }
-  if (!Array.isArray(x?.contacts) || !x.contacts.length || !x.contacts.every((c) => c?.name && c?.phone)) { alert('Arquivo de cópia de segurança inválido.'); return; }
+  try { x = JSON.parse(await file.text()); } catch { toast('Arquivo .json inválido.', 'error'); return; }
+  if (!Array.isArray(x?.contacts) || !x.contacts.length || !x.contacts.every((c) => c?.name && c?.phone)) { toast('Esse arquivo não é uma cópia de segurança válida.', 'error'); return; }
   const old = x.records && typeof x.records === 'object' ? x.records : {}; // formato da versão antiga
   const contacts = x.contacts.map((c, i) => ({
     name: String(c.name), phone: String(c.phone),
@@ -525,25 +1026,41 @@ $('importFile').onchange = async (e) => {
     note: c.note ?? old[i]?.note ?? '',
     updatedAt: c.updatedAt ?? old[i]?.updatedAt ?? null,
   }));
-  const name = prompt('Nome da lista importada:', x.name || file.name.replace(/\.json$/i, ''));
+  const done = contacts.filter((c) => c.status).length;
+  const name = await ask({
+    title: 'Importar lista',
+    message: `${contacts.length} contatos encontrados${done ? `, ${done} com resultado` : ''}. Dê um nome para a lista:`,
+    confirmText: 'Importar',
+    input: { value: x.name || file.name.replace(/\.json$/i, ''), placeholder: 'Nome da lista' },
+  });
   if (!name) return;
-  try { await createList(name.trim(), contacts); alert(`Lista "${name}" importada com ${contacts.length} contatos.`); }
-  catch (err) { alert(err.message); }
-};
+  try { await createList(name, contacts); toast(`Lista "${name}" importada com ${contacts.length} contatos.`); }
+  catch (err) { toast(err.message, 'error'); }
+}
+$('importFile').onchange = (e) => { const f = e.target.files[0]; e.target.value = ''; importFile(f); };
+const dz = $('dropzone');
+['dragenter', 'dragover'].forEach((ev) => dz.addEventListener(ev, () => dz.classList.add('drag')));
+['dragleave', 'drop'].forEach((ev) => dz.addEventListener(ev, () => dz.classList.remove('drag')));
 
 async function renameList(l) {
-  const name = prompt('Novo nome da lista:', l.name);
-  if (!name || name.trim() === l.name) return;
+  const name = await ask({ title: 'Renomear lista', confirmText: 'Salvar', input: { value: l.name, placeholder: 'Nome da lista' } });
+  if (!name || name === l.name) return;
   try {
-    await api('lists/' + l.id, { method: 'PATCH', body: { name: name.trim() } });
-    l.name = name.trim();
-    if (list?.id === l.id) list.name = l.name;
+    await api('lists/' + l.id, { method: 'PATCH', body: { name } });
+    l.name = name;
+    if (list?.id === l.id) list.name = name;
     render();
-  } catch (err) { alert(err.message); }
+    toast('Lista renomeada.');
+  } catch (err) { toast(err.message, 'error'); }
 }
 
 async function deleteList(l) {
-  if (!confirm(`Excluir a lista "${l.name}" e todos os seus resultados? Isso não pode ser desfeito. Baixe o relatório antes, se precisar.`)) return;
+  const ok = await ask({
+    title: `Excluir "${l.name}"?`,
+    message: 'A lista e todos os seus resultados serão apagados. Isso não pode ser desfeito.\nSe precisar, baixe o relatório antes.',
+    confirmText: 'Excluir', danger: true,
+  });
+  if (!ok) return;
   try {
     await api('lists/' + l.id, { method: 'DELETE' });
     if (list?.id === l.id) { for (const c of list.contacts) delete queue[c.id]; store.set('nc-pending', queue); list = null; }
@@ -551,11 +1068,17 @@ async function deleteList(l) {
     if (!list && lists[0]) await openList(lists[0].id, { keepTab: true });
     switchTab('lists');
     render();
-  } catch (err) { alert(err.message); }
+    toast('Lista excluída.');
+  } catch (err) { toast(err.message, 'error'); }
 }
 
 $('resetBtn').onclick = async () => {
-  if (!confirm(`Apagar todos os resultados e observações da lista "${list.name}"? Baixe o relatório antes para não perder.`)) return;
+  const ok = await ask({
+    title: 'Limpar resultados?',
+    message: `Todos os status e observações da lista "${list.name}" serão apagados. Os contatos continuam.\nBaixe o relatório antes para não perder.`,
+    confirmText: 'Limpar resultados', danger: true,
+  });
+  if (!ok) return;
   try {
     commitNote();
     for (const c of list.contacts) delete queue[c.id];
@@ -563,10 +1086,11 @@ $('resetBtn').onclick = async () => {
     await api('lists/' + list.id, { method: 'PATCH', body: { resetResults: true } });
     store.set('nc-index-' + list.id, 0);
     await openList(list.id);
-  } catch (err) { alert(err.message); }
+    toast('Resultados limpos.');
+  } catch (err) { toast(err.message, 'error'); }
 };
 
-/* ---------- exportação ---------- */
+/* ================= Exportação ================= */
 $('csvBtn').onclick = () => {
   const rows = [['Nome', 'Telefone', 'Status', 'Observação', 'Data do registro'],
     ...list.contacts.map((c) => [c.name, phone(c), c.status || 'Pendente', c.note || '', c.updated_at ? new Date(c.updated_at).toLocaleString('pt-BR') : ''])];
